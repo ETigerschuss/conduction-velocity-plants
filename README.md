@@ -90,8 +90,12 @@ cvplants/
   analysis.py      event detection, delay, CV, transformation metrics, gating
   batch.py         walk the dataset → results table + per-species summary
   viz.py           per-recording, per-species and summary figures
-scripts/run_all.py end-to-end: writes results/*.csv and results/figures/*.png
+  phylo.py         comparative analysis: functional profiles, clustering,
+                   Mantel test vs taxonomy, cross-variable correlations
+scripts/run_all.py     end-to-end: writes results/*.csv and results/figures/*.png
+scripts/comparative.py taxonomy analysis -> stats + comparative figures (REPORT.md)
 notebooks/conduction_velocity_deep_dive.ipynb   narrative walk-through
+REPORT.md          does signal transformation track evolutionary relationship?
 data/<species>/   recordings (WAV + events.txt); manifest.csv is committed
 results/          recordings.csv, species_summary.csv, figures/
 ```

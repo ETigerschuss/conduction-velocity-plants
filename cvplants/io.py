@@ -29,6 +29,57 @@ SPECIES_LATIN = {
 }
 
 
+# Taxonomy for the comparative / phylogenetic analysis. Family and order follow
+# APG IV; "clade" splits monocots from eudicots.
+SPECIES_FAMILY = {
+    "Argentian Dollar": "Lamiaceae", "Basil": "Lamiaceae",
+    "Hierbabuena": "Lamiaceae", "Mint": "Lamiaceae", "Rosemary": "Lamiaceae",
+    "Chilean Chile": "Solanaceae", "Ornamental Chile": "Solanaceae",
+    "Tomato": "Solanaceae",
+    "Marijuana": "Cannabaceae", "Creeping Inchplant": "Commelinaceae",
+    "Ruda": "Rutaceae", "Sensitive Mimosa": "Fabaceae",
+    "Venus Flytrap": "Droseraceae",
+}
+SPECIES_ORDER = {
+    "Argentian Dollar": "Lamiales", "Basil": "Lamiales",
+    "Hierbabuena": "Lamiales", "Mint": "Lamiales", "Rosemary": "Lamiales",
+    "Chilean Chile": "Solanales", "Ornamental Chile": "Solanales",
+    "Tomato": "Solanales",
+    "Marijuana": "Rosales", "Creeping Inchplant": "Commelinales",
+    "Ruda": "Sapindales", "Sensitive Mimosa": "Fabales",
+    "Venus Flytrap": "Caryophyllales",
+}
+SPECIES_CLADE = {sp: ("monocot" if sp == "Creeping Inchplant" else "eudicot")
+                 for sp in SPECIES_FAMILY}
+
+FAMILY_COLORS = {
+    "Lamiaceae": "#4c9a2a", "Solanaceae": "#d1495b", "Cannabaceae": "#8e6cc0",
+    "Commelinaceae": "#a06a3f", "Rutaceae": "#2a9d8f", "Fabaceae": "#e07a9c",
+    "Droseraceae": "#5b7fa6",
+}
+
+
+def genus(species: str) -> str:
+    """Genus (first token of the Latin name)."""
+    return SPECIES_LATIN.get(species, species).split()[0]
+
+
+def taxonomic_distance(a: str, b: str) -> int:
+    """Coarse taxonomic distance between two common names (0 = same species,
+    up to 5 = different clade). Used as the taxonomy side of a Mantel test."""
+    if a == b:
+        return 0
+    if genus(a) == genus(b):
+        return 1
+    if SPECIES_FAMILY.get(a) == SPECIES_FAMILY.get(b):
+        return 2
+    if SPECIES_ORDER.get(a) == SPECIES_ORDER.get(b):
+        return 3
+    if SPECIES_CLADE.get(a) == SPECIES_CLADE.get(b):
+        return 4
+    return 5
+
+
 @dataclass
 class Recording:
     """One two-channel recording plus its markers and metadata."""

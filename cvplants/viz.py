@@ -150,10 +150,16 @@ def plot_transformation(df, out_path):
     return out_path
 
 
-def plot_transformation_by_species(df, out_path, order_by="attenuation_far_near"):
-    """Bar (mean ± std) + per-recording scatter for the three near->far metrics,
-    with species on the x-axis. Species are ordered by median `order_by` and the
-    same order is used across all three panels so they line up."""
+def plot_transformation_by_species(df, out_path, order_by="attenuation_far_near",
+                                   central="median", color_by_family=True):
+    """Bar + per-recording scatter for the three near->far metrics, species on x.
+
+    central="median": bar = median, error bars = interquartile range (robust for
+    the right-skewed ratio metrics). central="mean": bar = mean ± SD.
+    Species are ordered by median `order_by`; the same order is used in all
+    panels. If color_by_family, bars are tinted by taxonomic family.
+    """
+    from .io import SPECIES_FAMILY, FAMILY_COLORS
     v = df[df["valid"] == True]  # noqa: E712
     metrics = [
         ("attenuation_far_near", "Amplitude ratio  far / near", 1.0),
@@ -163,36 +169,137 @@ def plot_transformation_by_species(df, out_path, order_by="attenuation_far_near"
     order = (v.groupby("species")[order_by].median()
              .sort_values().index.tolist())
     x = np.arange(len(order))
+    if color_by_family:
+        bar_colors = [FAMILY_COLORS.get(SPECIES_FAMILY.get(s, ""), "#cfe3f5")
+                      for s in order]
+    else:
+        bar_colors = ["#cfe3f5"] * len(order)
 
-    fig, axes = plt.subplots(3, 1, figsize=(12, 13), sharex=True)
+    fig, axes = plt.subplots(3, 1, figsize=(12, 13.5), sharex=True)
     for ax, (col, title, ref) in zip(axes, metrics):
-        means, stds, groups = [], [], []
+        centers, lo_err, hi_err, groups = [], [], [], []
         for s in order:
             vals = v[v["species"] == s][col].dropna().values
             groups.append(vals)
-            means.append(np.mean(vals) if len(vals) else np.nan)
-            stds.append(np.std(vals) if len(vals) else np.nan)
-        ax.bar(x, means, yerr=stds, capsize=4, color="#cfe3f5",
-               edgecolor="#25507a", linewidth=1.0, zorder=1,
+            if not len(vals):
+                centers.append(np.nan); lo_err.append(0); hi_err.append(0); continue
+            if central == "median":
+                c = np.median(vals)
+                q1, q3 = np.percentile(vals, [25, 75])
+                centers.append(c); lo_err.append(c - q1); hi_err.append(q3 - c)
+            else:
+                c = np.mean(vals); s_ = np.std(vals)
+                centers.append(c); lo_err.append(s_); hi_err.append(s_)
+        ax.bar(x, centers, yerr=[lo_err, hi_err], capsize=4, color=bar_colors,
+               edgecolor="#333", linewidth=0.8, zorder=1,
                error_kw=dict(ecolor="#555", lw=1.2))
         for i, vals in enumerate(groups):
             if len(vals):
                 jx = np.random.normal(i, 0.06, size=len(vals))
-                ax.scatter(jx, vals, s=22, color="#25507a", alpha=0.75,
+                ax.scatter(jx, vals, s=22, color="#22303c", alpha=0.7,
                            edgecolor="k", linewidth=0.3, zorder=3)
         if ref is not None:
             ax.axhline(ref, color="k", ls="--", lw=1, zorder=0)
         ax.set_ylabel(title, fontsize=10)
         ax.grid(axis="y", ls="--", alpha=0.4)
+
     counts = [len(v[v["species"] == s]) for s in order]
     axes[-1].set_xticks(x)
     axes[-1].set_xticklabels([f"{s}\n(n={c})" for s, c in zip(order, counts)],
                              rotation=40, ha="right")
-    fig.suptitle("Near→far signal transformation by species "
-                 "(bar = mean ± SD, dots = recordings)", fontsize=12)
+    if color_by_family:
+        fams = sorted({SPECIES_FAMILY.get(s, "?") for s in order})
+        handles = [plt.Rectangle((0, 0), 1, 1, fc=FAMILY_COLORS.get(f, "#cfe3f5"),
+                                 ec="#333") for f in fams]
+        axes[0].legend(handles, fams, title="Family", fontsize=8,
+                       ncol=2, loc="upper left")
+    ctl = "median ± IQR" if central == "median" else "mean ± SD"
+    fig.suptitle(f"Near→far signal transformation by species "
+                 f"(bar = {ctl}, dots = recordings)", fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.99))
     fig.savefig(out_path, dpi=120)
     plt.close(fig)
+    return out_path
+
+
+def plot_functional_dendrogram(prof, Z, out_path):
+    """Dendrogram of species by functional profile; leaf labels colored by family."""
+    from scipy.cluster.hierarchy import dendrogram
+    from .io import SPECIES_FAMILY, FAMILY_COLORS
+    labels = list(prof.index)
+    fig, ax = plt.subplots(figsize=(11, 5.5))
+    dn = dendrogram(Z, labels=labels, ax=ax, leaf_rotation=45,
+                    color_threshold=0, above_threshold_color="#777")
+    ax.set_ylabel("functional distance (z-scored metrics)")
+    ax.set_title("Species clustered by near→far signal transformation\n"
+                 "(leaf color = taxonomic family)")
+    for lbl in ax.get_xmajorticklabels():
+        fam = SPECIES_FAMILY.get(lbl.get_text(), "?")
+        lbl.set_color(FAMILY_COLORS.get(fam, "#000"))
+        lbl.set_ha("right")
+    fams = sorted({SPECIES_FAMILY.get(s, "?") for s in labels})
+    handles = [plt.Line2D([0], [0], marker="s", ls="", ms=9,
+                          mfc=FAMILY_COLORS.get(f, "#000"), mec="#333") for f in fams]
+    ax.legend(handles, fams, title="Family", fontsize=8, ncol=2, loc="upper right")
+    fig.tight_layout(); fig.savefig(out_path, dpi=120); plt.close(fig)
+    return out_path
+
+
+def plot_family_strip(df, out_path, metrics=None):
+    """Per-metric strip plot grouped by family (species medians as big markers)."""
+    from .io import SPECIES_FAMILY, FAMILY_COLORS
+    from .phylo import species_profiles
+    v = df[df["valid"] == True]  # noqa: E712
+    metrics = metrics or [
+        ("attenuation_far_near", "Amplitude ratio far/near", 1.0),
+        ("broadening_far_near", "Width ratio far/near", 1.0),
+        ("xcorr_corr", "Waveform similarity", None),
+    ]
+    prof = species_profiles(df)
+    fams = (prof.groupby("family").size().sort_values(ascending=False).index.tolist())
+    fig, axes = plt.subplots(1, len(metrics), figsize=(15, 5))
+    for ax, (col, title, ref) in zip(axes, metrics):
+        for i, fam in enumerate(fams):
+            sp_in = [s for s in prof.index if SPECIES_FAMILY.get(s) == fam]
+            recs = v[v["species"].isin(sp_in)][col].dropna().values
+            jx = np.random.normal(i, 0.07, size=len(recs))
+            ax.scatter(jx, recs, s=14, color=FAMILY_COLORS.get(fam, "#888"),
+                       alpha=0.4, edgecolor="none")
+            meds = prof.loc[sp_in, col].values
+            ax.scatter(np.full(len(meds), i), meds, s=70,
+                       color=FAMILY_COLORS.get(fam, "#888"), edgecolor="k",
+                       linewidth=0.8, zorder=4)
+        if ref is not None:
+            ax.axhline(ref, color="k", ls="--", lw=1)
+        ax.set_xticks(range(len(fams)))
+        ax.set_xticklabels(fams, rotation=45, ha="right", fontsize=8)
+        ax.set_title(title, fontsize=10); ax.grid(axis="y", ls="--", alpha=0.3)
+    fig.suptitle("Transformation metrics by family "
+                 "(faint = recordings, bold = species medians)", fontsize=12)
+    fig.tight_layout(rect=(0, 0, 1, 0.98))
+    fig.savefig(out_path, dpi=120); plt.close(fig)
+    return out_path
+
+
+def plot_attn_broadening(df, out_path):
+    """Attenuation vs broadening, colored by family; tests cable-filtering idea."""
+    from .io import SPECIES_FAMILY, FAMILY_COLORS
+    from scipy.stats import spearmanr
+    v = df[df["valid"] == True].copy()  # noqa: E712
+    v = v[(v["broadening_far_near"] < 6) & (v["attenuation_far_near"] < 6)]
+    fig, ax = plt.subplots(figsize=(7.5, 6))
+    for fam in sorted(v["species"].map(SPECIES_FAMILY).dropna().unique()):
+        sub = v[v["species"].map(SPECIES_FAMILY) == fam]
+        ax.scatter(sub["attenuation_far_near"], sub["broadening_far_near"],
+                   s=28, color=FAMILY_COLORS.get(fam, "#888"), alpha=0.8,
+                   edgecolor="k", linewidth=0.3, label=fam)
+    r, p = spearmanr(v["attenuation_far_near"], v["broadening_far_near"])
+    ax.axhline(1, color="k", ls=":", lw=0.8); ax.axvline(1, color="k", ls=":", lw=0.8)
+    ax.set_xlabel("amplitude ratio far/near (attenuation)")
+    ax.set_ylabel("width ratio far/near (broadening)")
+    ax.set_title(f"Attenuation vs broadening (Spearman ρ={r:.2f}, p={p:.1e})")
+    ax.legend(fontsize=7, title="Family"); ax.grid(ls="--", alpha=0.3)
+    fig.tight_layout(); fig.savefig(out_path, dpi=120); plt.close(fig)
     return out_path
 
 
