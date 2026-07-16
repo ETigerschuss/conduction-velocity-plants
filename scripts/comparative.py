@@ -43,11 +43,21 @@ def main():
         res = phylo.kruskal_by_family(df, col)
         print(res)
 
+    print("\n=== conduction velocity by species (now that distances are in) ===")
+    cvmed = (df[df["valid"] == True].groupby("species")["cv_xcorr_mm_s"]  # noqa: E712
+             .median().sort_values())
+    print(cvmed.round(2).to_string())
+    print("\nKruskal-Wallis of CV across families:",
+          phylo.kruskal_by_family(df, "cv_xcorr_mm_s"))
+
     print("\n=== genus-pair check (same genus should be similar) ===")
-    for pair in [("Mint", "Hierbabuena"), ("Chilean Chile", "Ornamental Chile")]:
-        a, b = pair
+    cols = phylo.METRICS + ["cv_xcorr_mm_s"]
+    cvsp = df[df["valid"] == True].groupby("species")["cv_xcorr_mm_s"].median()  # noqa: E712
+    for a, b in [("Mint", "Hierbabuena"), ("Chilean Chile", "Ornamental Chile")]:
         print(f"{a} vs {b} (both {SPECIES_FAMILY[a]}):")
-        print("   ", prof.loc[[a, b], phylo.METRICS].round(3).to_dict("index"))
+        sub = prof.loc[[a, b], phylo.METRICS].copy()
+        sub["cv_mm_s"] = [cvsp[a], cvsp[b]]
+        print(sub.round(3).to_string())
 
     print("\n=== cross-variable correlations (recording level) ===")
     for k, val in phylo.crossvar_correlations(df).items():
@@ -66,6 +76,8 @@ def main():
     viz.plot_functional_dendrogram(prof, Z, os.path.join(fig_dir, "functional_dendrogram.png"))
     viz.plot_family_strip(df, os.path.join(fig_dir, "metrics_by_family.png"))
     viz.plot_attn_broadening(df, os.path.join(fig_dir, "attenuation_vs_broadening.png"))
+    viz.plot_delay_validation(df, os.path.join(root, "data", "distances.csv"),
+                              os.path.join(fig_dir, "delay_validation.png"))
     print("done")
 
 

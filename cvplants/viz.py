@@ -303,6 +303,38 @@ def plot_attn_broadening(df, out_path):
     return out_path
 
 
+def plot_delay_validation(df, dist_csv, out_path):
+    """Our measured inter-channel delay vs the experimenters' manual Tiempo (s).
+
+    An independent check on both the delay pipeline and the spreadsheet
+    cross-reference: the two should agree along the identity line.
+    """
+    import pandas as pd
+    from scipy.stats import spearmanr
+    d = pd.read_csv(dist_csv)
+    m = df.merge(d, on=["species", "recording"], how="left")
+    v = m[(m["valid"] == True) & m["sheet_delay_s"].notna()  # noqa: E712
+          & m["xcorr_delay_s"].notna()]
+    fig, ax = plt.subplots(figsize=(6.5, 6))
+    colors = {"exact": "#25507a", "order": "#e07a2c", "coerced": "#888"}
+    for meth, c in colors.items():
+        sub = v[v["match_method"] == meth]
+        if len(sub):
+            ax.scatter(sub["sheet_delay_s"], sub["xcorr_delay_s"], s=26, color=c,
+                       alpha=0.8, edgecolor="k", linewidth=0.3,
+                       label=f"{meth} (n={len(sub)})")
+    hi = max(v["sheet_delay_s"].max(), v["xcorr_delay_s"].max()) * 1.05
+    ax.plot([0, hi], [0, hi], "k--", lw=1, label="identity")
+    r, p = spearmanr(v["sheet_delay_s"], v["xcorr_delay_s"])
+    ax.set_xlabel("spreadsheet manual delay Tiempo (s)")
+    ax.set_ylabel("our measured inter-channel delay (s)")
+    ax.set_title(f"Delay validation (Spearman ρ={r:.2f}, p={p:.1e}, n={len(v)})")
+    ax.legend(fontsize=8); ax.grid(ls="--", alpha=0.3)
+    ax.set_xlim(0, hi); ax.set_ylim(0, hi)
+    fig.tight_layout(); fig.savefig(out_path, dpi=120); plt.close(fig)
+    return out_path
+
+
 def plot_distance_delay(df, out_path, species="Marijuana"):
     """For a species with known electrode spacing: distance vs delay (slope=CV)."""
     v = df[(df["species"] == species) & (df["valid"] == True)  # noqa: E712

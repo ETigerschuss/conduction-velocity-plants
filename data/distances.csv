@@ -1,0 +1,177 @@
+species,recording,distance_mm,sheet_delay_s,sheet_cv_mm_s,match_method
+Argentian Dollar,BYB_Recording_2024-02-05_20.00.19,8.95,0.882,10.14739229,exact
+Argentian Dollar,BYB_Recording_2024-02-15_21.34.38,6.25,1.385,4.512635379,exact
+Argentian Dollar,BYB_Recording_2024-02-28_18.04.24,8.85,1.76,5.028409091,order
+Argentian Dollar,BYB_Recording_2024-02-28_18.09.31,9.32,4.42,2.108597285,order
+Argentian Dollar,BYB_Recording_2024-02-29_18.32.58,11.47,7.085,1.618913197,exact
+Argentian Dollar,BYB_Recording_2024-03-06_22.07.54,9.6,0.776,12.37113402,order
+Argentian Dollar,BYB_Recording_2024-03-06_22.10.49,9.88,7.878,1.254125413,order
+Argentian Dollar,BYB_Recording_2024-03-15_21.39.34,13.1,9.34,1.402569593,exact
+Basil,BYB_Recording_2024-01-14_19.15.17,23.1,1.512,15.27777778,exact
+Basil,BYB_Recording_2024-01-23_17.24.57,21.2,1.782,11.89674523,exact
+Basil,BYB_Recording_2024-01-23_17.29.46,19.65,2.098,9.366062917,exact
+Basil,BYB_Recording_2024-01-24_20.37.33,16.07,1.48,10.85810811,exact
+Basil,BYB_Recording_2024-01-28_14.33.45,12.89,4.786,2.693272043,exact
+Basil,BYB_Recording_2024-01-28_14.51.36,15.48,3.154,4.908053266,exact
+Basil,BYB_Recording_2024-02-12_20.13.13,18.38,1.24,14.82258065,exact
+Basil,BYB_Recording_2024-02-19_18.33.59,6.86,1.408,4.872159091,exact
+Basil,BYB_Recording_2024-02-23_19.15.06,9.86,4.548,2.167985928,exact
+Basil,BYB_Recording_2024-02-26_19.20.30,7.41,6.098,1.215152509,exact
+Basil,BYB_Recording_2024-02-26_19.38.09,9.72,3.426,2.837127846,exact
+Chilean Chile,BYB_Recording_2024-02-20_20.46.43,28.69,3.167,9.059046416,exact
+Chilean Chile,BYB_Recording_2024-02-23_20.12.50,12.98,7.818,1.660271169,order
+Chilean Chile,BYB_Recording_2024-02-23_20.16.53,14.56,3.763,3.869253255,exact
+Chilean Chile,BYB_Recording_2024-02-23_20.20.33,18.12,8.459,2.142097175,exact
+Chilean Chile,BYB_Recording_2024-02-26_20.31.22,13.4,1.253,10.6943336,exact
+Chilean Chile,BYB_Recording_2024-02-26_20.34.43,41.71,1.85,22.54594595,exact
+Chilean Chile,BYB_Recording_2024-03-11_20.19.30,26.13,1.787,14.62227196,exact
+Chilean Chile,BYB_Recording_2024-03-11_20.24.33,24.72,1.128,21.91489362,exact
+Chilean Chile,BYB_Recording_2024-03-11_20.27.38,11.69,0.636,18.38050314,exact
+Chilean Chile,BYB_Recording_2024-03-11_20.31.48,23.08,2.311,9.987018607,exact
+Chilean Chile,BYB_Recording_2024-03-11_20.34.42,18.34,1.109,16.5374211,exact
+Creeping Inchplant,BYB_Recording_2024-02-05_19.37.45,,,,unmatched
+Creeping Inchplant,BYB_Recording_2024-02-07_19.05.17,7.13,1.127,6.326530612,order
+Creeping Inchplant,BYB_Recording_2024-02-19_19.26.20,12.43,2.279,5.454146556,exact
+Creeping Inchplant,BYB_Recording_2024-02-20_20.02.17,12.43,2.279,5.454146556,order
+Creeping Inchplant,BYB_Recording_2024-02-20_20.07.25,7.99,7.38,1.082655827,order
+Creeping Inchplant,BYB_Recording_2024-02-20_20.10.44,8.75,7.017,1.24697164,order
+Creeping Inchplant,BYB_Recording_2024-02-26_20.12.11,16.14,1.868,8.640256959,order
+Creeping Inchplant,BYB_Recording_2024-02-28_18.46.50,12.82,2.878,4.454482279,exact
+Creeping Inchplant,BYB_Recording_2024-02-28_18.55.01,9.39,2.294,4.093286835,exact
+Creeping Inchplant,BYB_Recording_2024-02-29_17.41.48,12.91,1.004,12.85856574,exact
+Creeping Inchplant,BYB_Recording_2024-03-04_20.35.25,13.42,1.375,9.76,exact
+Creeping Inchplant,BYB_Recording_2024-03-04_20.43.03,14.0,0.975,14.35897436,exact
+Creeping Inchplant,BYB_Recording_2024-03-04_20.50.21,16.51,0.663,24.90196078,exact
+Creeping Inchplant,BYB_Recording_2024-03-06_21.56.45,18.42,3.871,4.758460346,exact
+Creeping Inchplant,BYB_Recording_2024-03-06_21.59.50,10.94,0.968,11.30165289,exact
+Hierbabuena,BYB_Recording_2024-02-22_17.09.43,8.07,2.768,2.915462428,order
+Hierbabuena,BYB_Recording_2024-02-22_17.13.41,10.83,4.917,2.202562538,exact
+Hierbabuena,BYB_Recording_2024-02-22_17.17.23,8.37,2.485,3.368209256,exact
+Hierbabuena,BYB_Recording_2024-02-26_19.52.38,7.5,2.837,2.643637645,exact
+Hierbabuena,BYB_Recording_2024-02-26_19.59.40,7.35,2.096,3.506679389,exact
+Hierbabuena,BYB_Recording_2024-03-01_17.55.10,8.25,3.01,2.740863787,exact
+Hierbabuena,BYB_Recording_2024-03-01_18.01.51,10.19,4.425,2.302824859,order
+Hierbabuena,BYB_Recording_2024-03-01_18.08.05,7.8,0.404,19.30693069,order
+Hierbabuena,BYB_Recording_2024-03-04_20.20.54,8.83,4.018,2.197610752,exact
+Hierbabuena,BYB_Recording_2024-03-08_21.04.08,6.56,0.521,12.59117083,order
+Hierbabuena,BYB_Recording_2024-03-08_21.06.56,5.59,0.13,43.0,order
+Hierbabuena,BYB_Recording_2024-03-08_21.12.27,8.1,2.341,3.460059804,order
+Hierbabuena,BYB_Recording_2024-03-08_21.18.08,7.32,0.801,9.138576779,exact
+Hierbabuena,BYB_Recording_2024-03-08_21.22.04,6.62,0.468,14.14529915,exact
+Hierbabuena,BYB_Recording_2024-03-08_21.24.53,6.41,0.348,18.41954023,exact
+Hierbabuena,BYB_Recording_2024-03-08_21.27.40,5.72,0.718,7.966573816,exact
+Marijuana,BYB_Recording_2025-08-23_22.07.27-28.8mm,27.8,2.72,10.22058824,order
+Marijuana,BYB_Recording_2025-08-23_22.55.19-22mm,22.0,1.679,13.10303752,exact
+Marijuana,BYB_Recording_2025-08-23_23.19.28-21mm,21.0,4.97,4.225352113,exact
+Marijuana,BYB_Recording_2025-08-23_23.30.42-22mm,22.0,2.87,7.665505226,exact
+Marijuana,BYB_Recording_2025-08-23_23.44.45-26mm,26.0,3.138,8.285532186,exact
+Marijuana,BYB_Recording_2025-09-13_01.03.00-23.11mm,23.1,11.25,2.053333333,order
+Marijuana,BYB_Recording_2025-09-13_01.21.52-16.78mm,16.8,6.205,2.707493956,exact
+Marijuana,BYB_Recording_2025-09-13_01.45.23-24.26mm,24.3,1.368,17.76315789,exact
+Marijuana,BYB_Recording_2025-09-13_01.52.20-21.60mm,21.6,1.112,19.42446043,exact
+Marijuana,BYB_Recording_2025-09-15_00.20.12-21.09mm,21.1,1.593,13.24544884,exact
+Marijuana,BYB_Recording_2025-09-15_00.27.51-21.09mm,18.1,3.986,4.540893126,exact
+Marijuana,BYB_Recording_2025-09-15_00.38.35-16.49mm,16.5,8.592,1.920391061,exact
+Marijuana,BYB_Recording_2025-09-15_00.47.20-16.06mm,16.1,5.436,2.961736571,exact
+Mint,BYB_Recording_2023-12-19_18.14.10,10.0,2.399,4.2,exact
+Mint,BYB_Recording_2024-01-26_19.52.38,27.11,4.473,6.0608093,exact
+Mint,BYB_Recording_2024-01-26_20.00.04,22.39,4.335,5.164936563,exact
+Mint,BYB_Recording_2024-01-26_20.08.19,36.21,2.364,15.31725888,order
+Mint,BYB_Recording_2024-02-09_22.29.45,22.43,9.405,2.384901648,exact
+Mint,BYB_Recording_2024-02-12_19.02.16,35.22,7.138,4.934155226,order
+Mint,BYB_Recording_2024-02-12_20.19.02,30.82,9.315,3.308641975,order
+Mint,BYB_Recording_2024-02-20_19.07.45,30.92,9.728,3.178453947,order
+Mint,BYB_Recording_2024-02-20_19.11.24,42.25,17.024,2.481790414,order
+Mint,BYB_Recording_2024-02-20_19.19.15,9.54,0.665,14.34586466,exact
+Mint,BYB_Recording_2024-02-20_19.22.59,14.08,2.405,5.854469854,exact
+Mint,BYB_Recording_2024-02-20_19.26.22,11.56,1.754,6.590649943,exact
+Mint,BYB_Recording_2024-02-20_19.32.55,16.83,3.628,4.638919515,exact
+Mint,BYB_Recording_2024-02-20_19.38.46,19.74,5.287,3.733686401,exact
+Ornamental Chile,BYB_Recording_2024-02-07_19.42.39,11.93,1.974,6.043566363,exact
+Ornamental Chile,BYB_Recording_2024-02-07_19.48.46,16.53,4.262,3.878460817,exact
+Ornamental Chile,BYB_Recording_2024-02-12_19.32.29,27.19,5.747,4.731164086,exact
+Ornamental Chile,BYB_Recording_2024-02-19_18.55.40,20.27,3.331,6.085259682,exact
+Ornamental Chile,BYB_Recording_2024-02-19_18.58.46,24.14,1.685,14.3264095,exact
+Ornamental Chile,BYB_Recording_2024-02-19_19.03.24,19.25,2.835,6.790123457,order
+Ornamental Chile,BYB_Recording_2024-02-19_19.07.47,17.7,7.349,2.408490951,order
+Ornamental Chile,BYB_Recording_2024-02-19_19.10.37,26.95,4.538,5.938739533,order
+Ornamental Chile,BYB_Recording_2024-02-19_19.17.58,18.5,2.279,8.117595437,exact
+Ornamental Chile,BYB_Recording_2024-02-22_17.57.13,26.03,4.318,6.028253821,exact
+Ornamental Chile,BYB_Recording_2024-02-22_18.00.13,19.54,3.64,5.368131868,exact
+Ornamental Chile,BYB_Recording_2024-02-23_19.53.15,21.54,1.798,11.97997775,exact
+Ornamental Chile,BYB_Recording_2024-02-23_19.55.48,24.41,9.041,2.699922575,exact
+Ornamental Chile,BYB_Recording_2024-02-23_19.59.02,14.12,1.692,8.345153664,exact
+Ornamental Chile,BYB_Recording_2024-02-23_20.04.22,23.63,8.829,2.676407294,order
+Rosemary,BYB_Recording_2024-02-15_21.13.19,11.72,5.016,2.336523126,exact
+Rosemary,BYB_Recording_2024-02-15_21.20.04,26.7,9.983,2.674546729,exact
+Rosemary,BYB_Recording_2024-02-15_21.27.05,7.96,2.859,2.784190276,exact
+Rosemary,BYB_Recording_2024-02-19_19.56.50,16.01,4.335,3.693194925,exact
+Rosemary,BYB_Recording_2024-02-23_19.35.51,13.19,0.887,14.87034949,exact
+Rosemary,BYB_Recording_2024-02-26_18.50.08,9.44,0.728,12.96703297,exact
+Rosemary,BYB_Recording_2024-02-26_19.06.39,16.32,6.826,2.390858482,order
+Rosemary,BYB_Recording_2024-02-26_19.10.25,9.84,1.185,8.303797468,order
+Rosemary,BYB_Recording_2024-02-29_17.20.55,,,,unmatched
+Ruda,BYB_Recording_2024-01-17_20.14.33,14.88,0.436,34.12844037,exact
+Ruda,BYB_Recording_2024-02-05_19.17.48,13.84,1.543,8.969539857,exact
+Ruda,BYB_Recording_2024-02-20_19.48.40,15.21,2.662,5.713749061,exact
+Ruda,BYB_Recording_2024-02-20_19.51.32,17.36,2.389,7.266638761,exact
+Ruda,BYB_Recording_2024-02-20_19.54.12,10.78,1.263,8.535233571,exact
+Ruda,BYB_Recording_2024-02-20_19.57.31,8.15,0.998,8.166332665,exact
+Ruda,BYB_Recording_2024-02-22_18.37.41,8.39,3.965,2.116015132,exact
+Ruda,BYB_Recording_2024-02-22_18.44.37,8.99,2.221,4.047726249,exact
+Ruda,BYB_Recording_2024-02-23_20.25.25,7.11,0.687,10.34934498,exact
+Ruda,BYB_Recording_2024-02-29_16.58.27,8.96,0.849,10.55359246,exact
+Ruda,BYB_Recording_2024-03-04_19.50.01,9.15,0.628,14.57006369,exact
+Ruda,BYB_Recording_2024-03-04_20.01.12,11.66,4.088,2.852250489,order
+Ruda,BYB_Recording_2024-03-06_21.31.33,10.3,0.831,12.39470517,exact
+Ruda,BYB_Recording_2024-03-06_21.44.52,9.32,0.955,9.759162304,exact
+Sensitive Mimosa,BYB_Recording_2021-07-26_12.46.45,40.0,0.98,40.81632653,exact
+Sensitive Mimosa,BYB_Recording_2024-06-27_17.07.10,21.6,1.044,20.68965517,coerced
+Sensitive Mimosa,BYB_Recording_2024-06-27_17.25.17,14.8,1.184,12.5,exact
+Sensitive Mimosa,BYB_Recording_2024-06-27_17.42.19,15.9,1.339,11.87453323,exact
+Sensitive Mimosa,BYB_Recording_2024-06-27_18.31.29,13.9,1.104,12.59057971,exact
+Sensitive Mimosa,BYB_Recording_2024-06-27_18.48.14,9.5,0.374,25.40106952,exact
+Sensitive Mimosa,BYB_Recording_2024-06-27_19.01.26,15.3,0.934,16.38115632,coerced
+Sensitive Mimosa,BYB_Recording_2024-06-27_19.15.52,14.1,0.636,22.16981132,exact
+Sensitive Mimosa,BYB_Recording_2024-06-27_19.57.29,15.5,0.483,32.09109731,exact
+Sensitive Mimosa,BYB_Recording_2024-07-08_16.06.58,15.9,0.211,75.35545024,coerced
+Sensitive Mimosa,BYB_Recording_2024-07-08_17.02.56,15.23,0.316,48.19620253,coerced
+Sensitive Mimosa,BYB_Recording_2024-07-08_17.19.08,15.5,0.241,64.3153527,exact
+Sensitive Mimosa,BYB_Recording_2024-07-10_12.31.11,15.64,0.341,45.86510264,exact
+Sensitive Mimosa,BYB_Recording_2024-07-10_12.56.35,14.21,0.216,65.78703704,exact
+Sensitive Mimosa,BYB_Recording_2024-07-11_11.28.52,18.02,0.335,53.79104478,exact
+Sensitive Mimosa,BYB_Recording_2024-07-11_11.50.12,12.42,0.859,14.45867288,exact
+Sensitive Mimosa,BYB_Recording_2024-07-11_12.37.51,13.13,0.942,13.93842887,exact
+Sensitive Mimosa,BYB_Recording_2024-07-11_13.14.26,14.6,1.887,7.737148914,exact
+Tomato,BYB_Recording_2024-02-03_21.26.23,6.24,0.391,15.95907928,exact
+Tomato,BYB_Recording_2024-02-03_21.30.34,10.08,0.694,14.52449568,exact
+Tomato,BYB_Recording_2024-02-06_19.19.43,10.6,1.078,9.833024119,exact
+Tomato,BYB_Recording_2024-02-06_20.01.08,10.8,0.867,12.4567474,coerced
+Tomato,BYB_Recording_2024-02-12_20.26.05,8.04,5.023,1.600637069,exact
+Tomato,BYB_Recording_2024-02-19_18.44.04,9.19,1.89,4.862433862,exact
+Tomato,BYB_Recording_2024-06-26_23.32.41,,,,unmatched
+Tomato,BYB_Recording_2024-06-26_23.54.25,,,,unmatched
+Tomato,BYB_Recording_2024-06-27_00.22.45,,,,unmatched
+Tomato,BYB_Recording_2024-06-27_00.38.23,,,,unmatched
+Tomato,BYB_Recording_2024-07-05_16.48.00,10.4,,,order
+Tomato,BYB_Recording_2024-07-05_16.51.56,10.5,,,order
+Tomato,BYB_Recording_2024-07-09_15.12.30,,,,unmatched
+Tomato,BYB_Recording_2024-07-10_11.32.51,,,,unmatched
+Venus Flytrap,BYB_Recording_2024-01-28_16.49.19,13.36,0.504,26.50793651,exact
+Venus Flytrap,BYB_Recording_2024-05-16_22.38.00,12.41,0.404,30.71782178,exact
+Venus Flytrap,BYB_Recording_2024-05-21_00.22.52,9.36,0.076,,order
+Venus Flytrap,BYB_Recording_2024-05-22_23.31.14,14.25,0.518,27.50965251,exact
+Venus Flytrap,BYB_Recording_2024-05-22_23.36.51,9.68,0.186,52.04301075,exact
+Venus Flytrap,BYB_Recording_2024-05-23_22.13.46,13.12,0.2018,65.0148662,exact
+Venus Flytrap,BYB_Recording_2024-05-25_20.35.34,17.8,0.43,41.39534884,exact
+Venus Flytrap,BYB_Recording_2024-05-27_22.48.45,8.64,0.342,25.26315789,exact
+Venus Flytrap,BYB_Recording_2024-05-29_00.04.58,12.42,0.283,43.8869258,order
+Venus Flytrap,BYB_Recording_2024-05-29_00.16.30,11.06,0.218,,order
+Venus Flytrap,BYB_Recording_2024-05-30_01.09.15,,,,unmatched
+Venus Flytrap,BYB_Recording_2024-06-01_21.44.30,,,,unmatched
+Venus Flytrap,BYB_Recording_2024-06-02_21.01.38,9.86,0.267,36.92883895,order
+Venus Flytrap,BYB_Recording_2024-07-03_11.24.59,6.5,0.286,22.72727273,exact
+Venus Flytrap,BYB_Recording_2025-01-10_17.18.20_Venus_11 mm_2record,11.0,0.277,39.71119134,exact
+Venus Flytrap,BYB_Recording_2025-01-10_17.49.47_Venus_7.5_2mm_record,7.5,0.443,16.93002257,exact
+Venus Flytrap,BYB_Recording_2025-01-14_17.17.22-13 mm,13.0,0.322,40.37267081,exact
+Venus Flytrap,BYB_Recording_2025-01-14_17.31.14 -11 mm,11.0,0.659,16.69195751,exact

@@ -16,10 +16,11 @@ velocity does that imply.
 - The `<name>-events.txt` sidecar holds two markers that bracket the
   **stimulation window** (start / stop) — they are *not* the electrode arrival
   times. The response is analysed in the post-stimulus window.
-- Where the inter-electrode distance was recorded it is encoded in the filename
-  (e.g. `...-28.8mm.wav`). This is present for all *Cannabis* recordings and a
-  few *Venus flytrap* recordings; other species carry the waveform-transformation
-  measurements but need a distance to convert a delay into an absolute velocity.
+- Inter-electrode distances come from the *Todo Data Resumen* spreadsheet,
+  cross-referenced to each recording by date + time
+  (`scripts/extract_distances.py` → `data/distances.csv`, 166/176 matched). A
+  few *Cannabis* / *Venus* recordings also carry a `-<mm>mm` filename tag, used
+  as a fallback. This unlocks absolute conduction velocity for every species.
 
 Conduction velocity is
 
@@ -92,6 +93,7 @@ cvplants/
   viz.py           per-recording, per-species and summary figures
   phylo.py         comparative analysis: functional profiles, clustering,
                    Mantel test vs taxonomy, cross-variable correlations
+scripts/extract_distances.py  cross-reference the spreadsheet -> data/distances.csv
 scripts/run_all.py     end-to-end: writes results/*.csv and results/figures/*.png
 scripts/comparative.py taxonomy analysis -> stats + comparative figures (REPORT.md)
 notebooks/conduction_velocity_deep_dive.ipynb   narrative walk-through
@@ -113,9 +115,12 @@ python scripts/run_all.py            # --data / --out / --cutoff to override
 - Amplitudes are in raw ADC units (a.u.); channel-to-channel ratios and timing
   are unaffected, but absolute microvolt calibration would need the SpikerBox
   gain.
-- Absolute CV requires the inter-electrode distance; add it to filenames as
-  `-<mm>mm` (or extend `cvplants.io.parse_distance_mm`) to unlock CV for the
-  remaining species.
+- Absolute CV needs the inter-electrode distance, now supplied for 166/176
+  recordings via `data/distances.csv`. The 10 without a distance are recordings
+  whose dates are absent from the spreadsheet (mostly Tomato's June/July batch);
+  they keep the distance-free transformation metrics. Two *Cannabis* distances
+  disagree between the spreadsheet and an older filename tag (22.07.27: 27.8 vs
+  28.8 mm; 00.27.51: 18.1 vs 21.09 mm) — the spreadsheet value is used.
 - *Sensitive Mimosa* recordings have no event markers and *Venus flytrap* mostly
   one; for those the response window falls back to the whole trace after a short
   settling period.

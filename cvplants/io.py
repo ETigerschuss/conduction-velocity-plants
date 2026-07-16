@@ -118,6 +118,37 @@ def parse_distance_mm(path: str) -> float | None:
     return float(m.group(1)) if m else None
 
 
+_DISTANCES = None
+
+
+def _distances_table() -> dict:
+    """Lazy-load data/distances.csv -> {(species, recording): mm}.
+
+    Built by scripts/extract_distances.py from the 'Todo Data Resumen'
+    spreadsheet, cross-referenced to each recording by date + time.
+    """
+    global _DISTANCES
+    if _DISTANCES is None:
+        _DISTANCES = {}
+        path = os.path.join(os.path.dirname(os.path.dirname(__file__)),
+                            "data", "distances.csv")
+        if os.path.exists(path):
+            import csv
+            with open(path, encoding="utf-8") as fh:
+                for row in csv.DictReader(fh):
+                    val = (row.get("distance_mm") or "").strip()
+                    if val and val != "unmatched":
+                        try:
+                            _DISTANCES[(row["species"], row["recording"])] = float(val)
+                        except ValueError:
+                            pass
+    return _DISTANCES
+
+
+def lookup_distance_mm(species: str, recording: str) -> float | None:
+    return _distances_table().get((species, recording))
+
+
 def parse_events(wav_path: str) -> list:
     """Read the '<name>-events.txt' sidecar -> list of (marker_id, time_s).
 
@@ -160,6 +191,13 @@ def load_recording(path: str, species: str | None = None) -> Recording:
     if species is None:
         # infer from parent directory name
         species = os.path.basename(os.path.dirname(path))
+    # Distance source of truth = the 'Todo Data Resumen' spreadsheet
+    # (data/distances.csv); fall back to a filename '-<mm>mm' tag if the
+    # recording is not in the spreadsheet.
+    name = os.path.splitext(os.path.basename(path))[0]
+    distance = lookup_distance_mm(species, name)
+    if distance is None:
+        distance = parse_distance_mm(path)
     return Recording(
         path=path,
         species=species,
@@ -167,7 +205,7 @@ def load_recording(path: str, species: str | None = None) -> Recording:
         data=data,
         fs=float(sr),
         events=parse_events(path),
-        distance_mm=parse_distance_mm(path),
+        distance_mm=distance,
     )
 
 

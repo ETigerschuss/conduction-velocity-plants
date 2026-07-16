@@ -80,9 +80,11 @@ def kruskal_by_family(df: pd.DataFrame, col: str, min_species=2):
     Uses species-median values (one value per species) to avoid pseudoreplication
     from many recordings per plant.
     """
-    prof = species_profiles(df)
-    fam_species = prof.groupby("family").filter(lambda g: len(g) >= min_species)
-    groups = [g[col].dropna().values for _, g in fam_species.groupby("family")]
+    v = df[df["valid"] == True].copy()  # noqa: E712
+    med = v.groupby("species")[col].median().rename("val").reset_index()
+    med["family"] = [SPECIES_FAMILY.get(s, "?") for s in med["species"]]
+    fam_species = med.groupby("family").filter(lambda g: len(g) >= min_species)
+    groups = [g["val"].dropna().values for _, g in fam_species.groupby("family")]
     groups = [g for g in groups if len(g) >= 2]
     if len(groups) < 2:
         return None
