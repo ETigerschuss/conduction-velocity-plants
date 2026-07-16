@@ -46,6 +46,8 @@ def main():
     print("[3/4] summary figures ...")
     viz.plot_cv_by_species(df, os.path.join(fig_dir, "cv_by_species.png"))
     viz.plot_transformation(df, os.path.join(fig_dir, "near_to_far_transformation.png"))
+    viz.plot_transformation_by_species(
+        df, os.path.join(fig_dir, "near_to_far_by_species.png"))
     viz.plot_distance_delay(df, os.path.join(fig_dir, "cannabis_distance_delay.png"))
 
     print("[4/4] per-species example traces ...")

@@ -150,6 +150,52 @@ def plot_transformation(df, out_path):
     return out_path
 
 
+def plot_transformation_by_species(df, out_path, order_by="attenuation_far_near"):
+    """Bar (mean ± std) + per-recording scatter for the three near->far metrics,
+    with species on the x-axis. Species are ordered by median `order_by` and the
+    same order is used across all three panels so they line up."""
+    v = df[df["valid"] == True]  # noqa: E712
+    metrics = [
+        ("attenuation_far_near", "Amplitude ratio  far / near", 1.0),
+        ("broadening_far_near",  "Width ratio  far / near (FWHM)", 1.0),
+        ("xcorr_corr",           "Waveform similarity  (max r)", None),
+    ]
+    order = (v.groupby("species")[order_by].median()
+             .sort_values().index.tolist())
+    x = np.arange(len(order))
+
+    fig, axes = plt.subplots(3, 1, figsize=(12, 13), sharex=True)
+    for ax, (col, title, ref) in zip(axes, metrics):
+        means, stds, groups = [], [], []
+        for s in order:
+            vals = v[v["species"] == s][col].dropna().values
+            groups.append(vals)
+            means.append(np.mean(vals) if len(vals) else np.nan)
+            stds.append(np.std(vals) if len(vals) else np.nan)
+        ax.bar(x, means, yerr=stds, capsize=4, color="#cfe3f5",
+               edgecolor="#25507a", linewidth=1.0, zorder=1,
+               error_kw=dict(ecolor="#555", lw=1.2))
+        for i, vals in enumerate(groups):
+            if len(vals):
+                jx = np.random.normal(i, 0.06, size=len(vals))
+                ax.scatter(jx, vals, s=22, color="#25507a", alpha=0.75,
+                           edgecolor="k", linewidth=0.3, zorder=3)
+        if ref is not None:
+            ax.axhline(ref, color="k", ls="--", lw=1, zorder=0)
+        ax.set_ylabel(title, fontsize=10)
+        ax.grid(axis="y", ls="--", alpha=0.4)
+    counts = [len(v[v["species"] == s]) for s in order]
+    axes[-1].set_xticks(x)
+    axes[-1].set_xticklabels([f"{s}\n(n={c})" for s, c in zip(order, counts)],
+                             rotation=40, ha="right")
+    fig.suptitle("Near→far signal transformation by species "
+                 "(bar = mean ± SD, dots = recordings)", fontsize=12)
+    fig.tight_layout(rect=(0, 0, 1, 0.99))
+    fig.savefig(out_path, dpi=120)
+    plt.close(fig)
+    return out_path
+
+
 def plot_distance_delay(df, out_path, species="Marijuana"):
     """For a species with known electrode spacing: distance vs delay (slope=CV)."""
     v = df[(df["species"] == species) & (df["valid"] == True)  # noqa: E712
