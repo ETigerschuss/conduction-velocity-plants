@@ -96,9 +96,12 @@ def plot_species_grid(recs, out_path, cutoff: float = CUTOFF_HZ, per_species=1):
     return out_path
 
 
-def plot_cv_by_species(df, out_path):
-    """Boxplot + jittered points of xcorr CV per species (valid recordings)."""
+def plot_cv_by_species(df, out_path, resolved_only=True):
+    """Boxplot + jittered points of xcorr CV per species. By default restricted
+    to recordings with a resolved (non-common-mode-dominated) delay."""
     v = df[(df["valid"] == True) & df["cv_xcorr_mm_s"].notna()]  # noqa: E712
+    if resolved_only and "delay_resolved" in v.columns:
+        v = v[v["delay_resolved"] == True]  # noqa: E712
     if v.empty:
         return None
     order = (v.groupby("species")["cv_xcorr_mm_s"].median()

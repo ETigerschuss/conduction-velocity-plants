@@ -165,6 +165,27 @@ def analyze_recording(rec: Recording, cutoff: float = CUTOFF_HZ,
     if not np.isnan(xc_lag) and xc_leader != near_ch and xcorr_delay > MIN_DELAY_S:
         flags.append("xcorr_peak_leader_disagree")
 
+    # common-mode / crosstalk diagnostics. A shared reference or channel
+    # bleedthrough puts an *instantaneous* (zero-lag) copy of one channel into
+    # the other. It shows up (a) as correlation already in the pre-stimulus
+    # baseline, and (b) as cross-correlation power at lag 0 rivalling the
+    # propagation peak — which biases the estimated delay toward zero.
+    def _corr(a, b):
+        a = a - a.mean(); b = b - b.mean()
+        d = np.sqrt(np.sum(a * a) * np.sum(b * b))
+        return float(np.sum(a * b) / d) if d > 0 else np.nan
+    cm_baseline_r = _corr(ch0[bi0:bi1], ch1[bi0:bi1]) if bi1 > bi0 else np.nan
+    event_zero_lag_r = _corr(ch0[ri0:ri1], ch1[ri0:ri1])
+    r0_over_rpk = (abs(event_zero_lag_r) / xc_corr) if (xc_corr and xc_corr > 0) else np.nan
+    # the delay (hence CV) is trustworthy only if it is not dominated by the
+    # instantaneous component and is comfortably above the timing floor
+    delay_resolved = bool(xcorr_delay > 3 * MIN_DELAY_S
+                          and (np.isnan(r0_over_rpk) or r0_over_rpk < 0.85))
+    if not delay_resolved:
+        flags.append("delay_unresolved")
+    if not np.isnan(cm_baseline_r) and cm_baseline_r > 0.6:
+        flags.append("common_mode_high")
+
     # signal-transformation metrics (near -> far)
     attenuation = abs(far.peak_amp) / abs(near.peak_amp) if near.peak_amp else np.nan
     broadening = far.fwhm / near.fwhm if near.fwhm else np.nan
@@ -199,6 +220,10 @@ def analyze_recording(rec: Recording, cutoff: float = CUTOFF_HZ,
         "xcorr_corr": round(xc_corr, 3),
         "cv_peak_mm_s": round(cv(peak_delay), 3) if not np.isnan(cv(peak_delay)) else np.nan,
         "cv_xcorr_mm_s": round(cv(xcorr_delay), 3) if not np.isnan(cv(xcorr_delay)) else np.nan,
+        "cm_baseline_r": round(cm_baseline_r, 3) if not np.isnan(cm_baseline_r) else np.nan,
+        "event_zero_lag_r": round(event_zero_lag_r, 3) if not np.isnan(event_zero_lag_r) else np.nan,
+        "r0_over_rpk": round(r0_over_rpk, 3) if not np.isnan(r0_over_rpk) else np.nan,
+        "delay_resolved": delay_resolved,
         "near_peak_amp": round(near.peak_amp, 1),
         "far_peak_amp": round(far.peak_amp, 1),
         "attenuation_far_near": round(attenuation, 3),

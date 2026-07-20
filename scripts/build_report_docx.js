@@ -19,8 +19,10 @@ function fit(file) {
   const s = Math.min(MAXW / w, MAXH / h, 1);
   return { width: Math.round(w * s), height: Math.round(h * s) };
 }
+let FIGN = 0, SECN = 0;
 function figure(file, caption) {
   const t = fit(file);
+  FIGN += 1;
   return [
     new Paragraph({
       alignment: AlignmentType.CENTER,
@@ -30,11 +32,11 @@ function figure(file, caption) {
     new Paragraph({
       alignment: AlignmentType.CENTER,
       spacing: { after: 200 },
-      children: [new TextRun({ text: caption, italics: true, size: 17, color: "555555" })],
+      children: [new TextRun({ text: `Figure ${FIGN}. ${caption.replace(/^Figure\s+\d+[a-z]?\.\s*/i, "")}`, italics: true, size: 17, color: "555555" })],
     }),
   ];
 }
-function h1(t) { return new Paragraph({ text: t, heading: HeadingLevel.HEADING_1, spacing: { before: 260, after: 120 } }); }
+function h1(t) { SECN += 1; return new Paragraph({ text: `${SECN}. ${t.replace(/^\d+\.\s*/, "")}`, heading: HeadingLevel.HEADING_1, spacing: { before: 260, after: 120 } }); }
 function h2(t) { return new Paragraph({ text: t, heading: HeadingLevel.HEADING_2, spacing: { before: 200, after: 100 } }); }
 function p(runs) {
   const children = Array.isArray(runs) ? runs : [new TextRun({ text: runs, size: 22 })];
@@ -87,10 +89,21 @@ kids.push(p([t("Each channel is baseline-subtracted (pre-stimulus window) and lo
 
 // 3. Conduction velocity
 kids.push(h1("3. Conduction velocity"));
-kids.push(p([t("Median CV per species ranges from ~2 mm/s (Argentian Dollar) to ~25 mm/s (Venus flytrap), all within the 1–40 mm/s range of earlier hand measurements. The velocity estimate is validated three ways: our automatic delay agrees with the experimenters’ manual delay (Spearman ρ = 0.80), delay scales with distance (ρ = 0.36, p = 3×10⁻⁶), and CV is independent of the electrode spacing used (ρ ≈ 0), as a true velocity must be.")]));
-kids.push(...figure("cv_by_species.png", "Figure 1. Conduction velocity by species (cross-correlation delay, valid recordings). Box = IQR, red = median, dots = recordings."));
+kids.push(p([t("Median CV per species ranges from ~2 to ~12 mm/s (resolved-delay recordings; see Section 4), within the 1–40 mm/s range of earlier hand measurements. The velocity estimate is validated three ways: our automatic delay agrees with the experimenters’ manual delay (Spearman ρ = 0.80), delay scales with distance (ρ = 0.36, p = 3×10⁻⁶), and CV is independent of the electrode spacing used (ρ ≈ 0), as a true velocity must be.")]));
+kids.push(...figure("cv_by_species.png", "Figure 1. Conduction velocity by species, restricted to recordings with a resolved (non-common-mode-dominated) delay — see Section 4. Box = IQR, red = median, dots = recordings."));
 kids.push(...figure("delay_validation.png", "Figure 2. Validation: our measured inter-channel delay vs the experimenters’ manual delay (Tiempo). Points fall on the identity line for both exact and order-inferred spreadsheet matches."));
 kids.push(...figure("cannabis_distance_delay.png", "Figure 3. Cannabis: electrode distance vs propagation delay; slope is an aggregate conduction velocity."));
+
+// 4. Channel integrity
+kids.push(new Paragraph({ children: [new PageBreak()] }));
+kids.push(h1("4. Channel integrity and common-mode (important correction)"));
+kids.push(p([t("Near/far is assigned per recording as the earlier-peaking channel. This is consistent for most species (ch0 leads in ~76% of recordings) but "), b("flips where the delay is tiny"), t(" — a coin-flip for Venus flytrap and Sensitive Mimosa, whose channels fire almost simultaneously. More importantly, the "), b("pre-stimulus baseline is already correlated between channels"), t(" (pooled r ≈ 0.66; > 0.5 in 108/176 recordings). With no signal present, that is a shared reference / amplifier common-mode, not biology — an instantaneous copy of one channel in the other that biases the measured delay toward zero and therefore inflates CV (= distance / delay).")]));
+kids.push(p([b("Correction. "), t("CV is trustworthy only on the resolved-delay subset (119/165 recordings). The slow species (Mint, Cannabis, Ornamental Chile, Rosemary) are unaffected. The headline that Venus flytrap was fastest (~25 mm/s) was an "), b("artifact"), t(": only 1/16 Venus recordings has a resolved delay, and on it CV ≈ 5 mm/s. The pipeline now records cm_baseline_r, event_zero_lag_r, r0_over_rpk and delay_resolved per recording.")]));
+kids.push(p([b("Effect on the active/passive call. "), t("The “active, shape-preserving” placement of Venus flytrap and (less so) Sensitive Mimosa is confounded: when both electrodes see the same event near-simultaneously — by fast conduction OR by volume conduction / shared reference — the far trace looks like an undelayed copy of the near trace, which is exactly the active signature. This montage cannot distinguish a fast regenerative AP from a single event seen twice. The passive/decremental conclusion for the slow species is unaffected.")]));
+kids.push(...figure("crosstalk_raw_examples.png", "Figure 4. Both channels, full trace and pre-stimulus baseline zoom. Mimosa: baseline r = 0.96 (near-identical slow wave = common-mode). Cannabis: baseline r = 0.20 (independent, clean delay). Venus: a sharp spike appears in both channels almost simultaneously."));
+kids.push(...figure("baseline_common_mode.png", "Figure 5. Pre-stimulus (baseline) zero-lag correlation between channels, per species. Above the dashed line (r = 0.5) the recording is in the shared-reference / common-mode regime."));
+kids.push(...figure("self_aligned_channels.png", "Figure 6. Each physical channel self-aligned on its OWN peak, drawn with an arbitrary gap; thin = recordings, thick = mean ± SD. Self-alignment removes the delay-smearing of the far average and sidesteps the near/far flip. baseline r annotates the common-mode coupling."));
+kids.push(...figure("cv_resolved_correction.png", "Figure 7. CV before (all valid) vs after (resolved delay only) removing common-mode/unresolved recordings; labels = resolved/total. Slow species are stable; Venus flytrap collapses to a single resolved recording."));
 
 // 4. Near-far transformation
 kids.push(new Paragraph({ children: [new PageBreak()] }));

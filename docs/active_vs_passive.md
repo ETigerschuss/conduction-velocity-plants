@@ -31,6 +31,51 @@ Environ*; Vodeneev, Akinchits & Sukhov 2015, *Plant Signal Behav*):
 
 ---
 
+## 0b. Channel integrity: near/far assignment and common-mode (read this first)
+
+A methodological check that materially changes the conclusions below.
+
+- **Near/far is assigned per recording** as "whichever channel peaks first."
+  Physically this is consistent for most species (ch0 leads in ~76% of
+  recordings), but it **flips** where the delay is tiny — essentially a coin-flip
+  for Venus flytrap and Sensitive Mimosa, whose two channels fire almost
+  simultaneously.
+- **The two channels share a common-mode component.** The *pre-stimulus*
+  baseline zero-lag correlation between channels is already high (pooled median
+  r ≈ 0.66; > 0.5 in 108/176 recordings) — with no signal present, that can only
+  be a shared reference / amplifier crosstalk, not biology
+  (`baseline_common_mode.png`, `crosstalk_raw_examples.png`). A common-mode
+  component is an *instantaneous* copy of one channel in the other; in the
+  cross-correlation it adds power at lag 0 and **biases the estimated delay toward
+  zero**.
+- **Consequence — CV was inflated where the delay is unresolvable.** CV =
+  distance / delay, so a spuriously small delay gives a spuriously huge CV. Only
+  **119/165** valid recordings have a *resolved* delay (`delay_resolved`: delay
+  above the timing floor and not dominated by the zero-lag component). The
+  headline that "**Venus flytrap is fastest at ~25 mm/s**" was an **artifact** —
+  only **1/16** Venus recordings has a resolved delay; on that one it is ~5 mm/s
+  (`cv_resolved_correction.png`). Ruda, Basil and Hierbabuena were moderately
+  inflated; the slow species (Mint, Cannabis, Ornamental Chile, Rosemary) are
+  unaffected (their delays are large and clean).
+- **All CV numbers below and in `REPORT.md` should be read on the
+  `delay_resolved` subset.** The pipeline now records `cm_baseline_r`,
+  `event_zero_lag_r`, `r0_over_rpk` and `delay_resolved` per recording, and the
+  CV-by-species figure is restricted to resolved recordings by default.
+
+**What this does to the active/passive call.** The "active, shape-preserving"
+placement of Venus flytrap and (to a lesser extent) Sensitive Mimosa is
+**confounded**: when both electrodes see the same event near-simultaneously —
+whether by genuinely fast conduction or by volume conduction / shared reference —
+the far trace *looks* like an undelayed, shape-preserved copy of the near trace,
+which is exactly the "active" signature. This montage **cannot distinguish a fast
+regenerative AP from a single event seen twice.** The conclusion that the *slow*
+species conduct passively/decrementally is unaffected (their delays are large and
+resolved); the claim that Venus/Mimosa conduct *actively between these electrodes*
+is not supported by the data — it is biologically likely (they do fire APs) but
+not demonstrable here.
+
+---
+
 ## 1. What the data can say (analyses implemented here)
 
 The structural advantage of this dataset: both electrodes sit on the same

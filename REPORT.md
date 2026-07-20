@@ -67,17 +67,27 @@ individual conduction event, not the label on the pot.
 Electrode distances for 166/176 recordings were cross-referenced from the
 *Todo Data Resumen* spreadsheet (`scripts/extract_distances.py` →
 `data/distances.csv`; 10 unmatched because those recording dates are absent from
-the sheet). Median CV per species, slowest to fastest:
+the sheet).
+
+> **Correction (channel integrity).** The two channels carry a shared common-mode
+> component (see `docs/active_vs_passive.md` §0b), which biases the delay toward
+> zero and inflates CV where the delay is unresolvable. CV is trustworthy only on
+> the `delay_resolved` subset (119/165 recordings). The most affected species is
+> **Venus flytrap**: only 1/16 recordings has a resolved delay, so its earlier
+> "fastest, ~25 mm/s" was an artifact (that one recording gives ~5 mm/s). The
+> table below uses the **resolved-delay** median; the slow species are unchanged.
+
+Median CV (resolved-delay recordings), slowest to fastest:
 
 | species | CV (mm/s) | | species | CV (mm/s) |
 |---|---|---|---|---|
-| Argentian Dollar | 2.1 | | Tomato | 8.4 |
-| Rosemary | 3.8 | | Ruda | 10.0 |
-| Mint | 3.9 | | Basil | 11.0 |
-| Hierbabuena | 4.0 | | Sensitive Mimosa | 12.8 |
-| Ornamental Chile | 5.6 | | Chilean Chile | 13.6 |
-| Marijuana | 5.8 | | **Venus flytrap** | **24.7** |
-| Creeping Inchplant | 6.7 | | | |
+| Argentian Dollar | 1.9 | | Marijuana | 5.8 |
+| Hierbabuena | 2.8 | | Tomato | 7.3 |
+| Rosemary | 3.8 | | Ruda | 7.9 |
+| Mint | 3.9 | | Basil | 8.2 |
+| Venus flytrap (n=1) | ~4.7 | | Sensitive Mimosa | 11.3 |
+| Creeping Inchplant | 5.2 | | Chilean Chile | 12.1 |
+| Ornamental Chile | 5.7 | | | |
 
 All values sit in the earlier hand-measured 1–40 mm/s range. Venus flytrap is
 the clear outlier (fast action potentials); Sensitive Mimosa is also fast.

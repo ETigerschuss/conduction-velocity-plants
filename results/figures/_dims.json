@@ -11,6 +11,10 @@
   900,
   720
  ],
+ "baseline_common_mode.png": [
+  1320,
+  600
+ ],
  "cable_vs_fhn_sim.png": [
   1800,
   540
@@ -19,9 +23,17 @@
   780,
   600
  ],
+ "crosstalk_raw_examples.png": [
+  1425,
+  1045
+ ],
  "cv_by_species.png": [
   1320,
   720
+ ],
+ "cv_resolved_correction.png": [
+  1440,
+  660
  ],
  "decrement_vs_distance.png": [
   900,
@@ -62,6 +74,10 @@
  "peak_onset_asymmetry.png": [
   1440,
   660
+ ],
+ "self_aligned_channels.png": [
+  1800,
+  1800
  ],
  "species_overview.png": [
   1210,
