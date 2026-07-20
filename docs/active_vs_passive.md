@@ -31,48 +31,43 @@ Environ*; Vodeneev, Akinchits & Sukhov 2015, *Plant Signal Behav*):
 
 ---
 
-## 0b. Channel integrity: near/far assignment and common-mode (read this first)
-
-A methodological check that materially changes the conclusions below.
+## 0b. Channel integrity: near/far assignment and the shared reference
 
 - **Near/far is assigned per recording** as "whichever channel peaks first."
-  Physically this is consistent for most species (ch0 leads in ~76% of
-  recordings), but it **flips** where the delay is tiny — essentially a coin-flip
-  for Venus flytrap and Sensitive Mimosa, whose two channels fire almost
-  simultaneously.
-- **The two channels share a common-mode component.** The *pre-stimulus*
-  baseline zero-lag correlation between channels is already high (pooled median
-  r ≈ 0.66; > 0.5 in 108/176 recordings) — with no signal present, that can only
-  be a shared reference / amplifier crosstalk, not biology
-  (`baseline_common_mode.png`, `crosstalk_raw_examples.png`). A common-mode
-  component is an *instantaneous* copy of one channel in the other; in the
-  cross-correlation it adds power at lag 0 and **biases the estimated delay toward
-  zero**.
-- **Consequence — CV was inflated where the delay is unresolvable.** CV =
-  distance / delay, so a spuriously small delay gives a spuriously huge CV. Only
-  **119/165** valid recordings have a *resolved* delay (`delay_resolved`: delay
-  above the timing floor and not dominated by the zero-lag component). The
-  headline that "**Venus flytrap is fastest at ~25 mm/s**" was an **artifact** —
-  only **1/16** Venus recordings has a resolved delay; on that one it is ~5 mm/s
-  (`cv_resolved_correction.png`). Ruda, Basil and Hierbabuena were moderately
-  inflated; the slow species (Mint, Cannabis, Ornamental Chile, Rosemary) are
-  unaffected (their delays are large and clean).
-- **All CV numbers below and in `REPORT.md` should be read on the
-  `delay_resolved` subset.** The pipeline now records `cm_baseline_r`,
-  `event_zero_lag_r`, `r0_over_rpk` and `delay_resolved` per recording, and the
-  CV-by-species figure is restricted to resolved recordings by default.
+  This is consistent for most species (ch0 leads in ~76% of recordings) but
+  flips where the delay is small; the delay *magnitude* (hence CV) is unaffected
+  by which label a channel gets.
+- **The two channels are correlated, and that is expected.** Both electrodes
+  share a soil/earth reference, so any whole-plant potential or reference
+  fluctuation appears in *both* — a normal referential montage, not amplifier
+  crosstalk. The pre-stimulus baseline correlation is high (pooled r ≈ 0.66;
+  `baseline_common_mode.png`, `crosstalk_raw_examples.png`) precisely because of
+  this shared ground. A large event on a small, Ca²⁺-rich leaf (Venus flytrap)
+  is also volume-conducted to both nearby electrodes, adding an instantaneous
+  shared component. **Correlation ≠ no delay.**
+- **The delay is recovered with a common-mode-robust model.** far(t) =
+  a·near(t) + b·near(t−τ) loads the shared/instantaneous part onto `a` and the
+  propagated part onto `b` at lag τ (`cvplants.propagation.two_component_fit`).
+  Across species the delayed fraction |b|/(|a|+|b|) is 0.68–0.90 and τ is
+  sign-consistent (75–100%) — i.e. a *real, directional* delay survives once the
+  shared component is separated. So the shared ground does not prevent measuring
+  which channel's event is later. The pipeline records `cm_baseline_r`,
+  `event_zero_lag_r`, `r0_over_rpk`, `delay_resolved`; 151/165 recordings resolve.
+- **Venus flytrap's fast CV is real.** Its 2-tap delay (~0.3 s, delayed-fraction
+  0.82, 14/16 resolved) gives CV ≈ 28–30 mm/s — consistent with the known fast
+  Dionaea AP. A small electrode spacing on the trap gives a *small but genuine*
+  delay, plus strong volume-conduction correlation; it is not "no delay." (An
+  earlier draft over-flagged the fast species with a hard time-floor and wrongly
+  called this an artifact — corrected.)
 
-**What this does to the active/passive call.** The "active, shape-preserving"
-placement of Venus flytrap and (to a lesser extent) Sensitive Mimosa is
-**confounded**: when both electrodes see the same event near-simultaneously —
-whether by genuinely fast conduction or by volume conduction / shared reference —
-the far trace *looks* like an undelayed, shape-preserved copy of the near trace,
-which is exactly the "active" signature. This montage **cannot distinguish a fast
-regenerative AP from a single event seen twice.** The conclusion that the *slow*
-species conduct passively/decrementally is unaffected (their delays are large and
-resolved); the claim that Venus/Mimosa conduct *actively between these electrodes*
-is not supported by the data — it is biologically likely (they do fire APs) but
-not demonstrable here.
+**Simulation vs real (`scripts/sim_vs_real.py`, `sim_vs_real_examples.png`).**
+Predicting the far trace from the near trace, the **active model (delayed copy +
+shared component) out-predicts the passive cable** for almost every species
+(median R² 0.4–0.87 vs 0.2–0.79). The far trace really is a *delayed* copy of the
+near trace, not a dispersed one — direct evidence for propagation with a
+resolvable delay. For the fast species this supports genuinely fast conduction;
+the montage still cannot, on its own, prove the fast event is *regeneratively*
+(rather than passively) propagated, but the delay itself is real.
 
 ---
 

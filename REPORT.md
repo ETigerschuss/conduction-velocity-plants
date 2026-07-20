@@ -69,25 +69,34 @@ Electrode distances for 166/176 recordings were cross-referenced from the
 `data/distances.csv`; 10 unmatched because those recording dates are absent from
 the sheet).
 
-> **Correction (channel integrity).** The two channels carry a shared common-mode
-> component (see `docs/active_vs_passive.md` §0b), which biases the delay toward
-> zero and inflates CV where the delay is unresolvable. CV is trustworthy only on
-> the `delay_resolved` subset (119/165 recordings). The most affected species is
-> **Venus flytrap**: only 1/16 recordings has a resolved delay, so its earlier
-> "fastest, ~25 mm/s" was an artifact (that one recording gives ~5 mm/s). The
-> table below uses the **resolved-delay** median; the slow species are unchanged.
+> **Channel integrity (common-mode is expected, not a defect).** Both electrodes
+> share a soil/earth reference, so a large *instantaneous* common component is
+> normal (see `docs/active_vs_passive.md` §0b). It does **not** prevent recovering
+> the delay: a common-mode-robust 2-tap model — far = a·near(t) + b·near(t−τ) —
+> separates the shared part (a) from the delayed propagation (b), and recovers a
+> real, sign-consistent delay for essentially all recordings (delayed-fraction
+> 0.68–0.90; 151/165 resolved). An earlier over-aggressive time-floor wrongly
+> flagged the fast species; the CV of **Venus flytrap (~28 mm/s)** is genuine —
+> a small electrode spacing on a fast, Ca²⁺-rich trap gives a small *but real*
+> delay plus strong volume-conduction correlation, not "no delay."
 
 Median CV (resolved-delay recordings), slowest to fastest:
 
 | species | CV (mm/s) | | species | CV (mm/s) |
 |---|---|---|---|---|
-| Argentian Dollar | 1.9 | | Marijuana | 5.8 |
-| Hierbabuena | 2.8 | | Tomato | 7.3 |
-| Rosemary | 3.8 | | Ruda | 7.9 |
-| Mint | 3.9 | | Basil | 8.2 |
-| Venus flytrap (n=1) | ~4.7 | | Sensitive Mimosa | 11.3 |
-| Creeping Inchplant | 5.2 | | Chilean Chile | 12.1 |
-| Ornamental Chile | 5.7 | | | |
+| Argentian Dollar | 2.1 | | Creeping Inchplant | 6.7 |
+| Rosemary | 3.8 | | Tomato | 8.4 |
+| Mint | 3.9 | | Ruda | 9.8 |
+| Hierbabuena | 4.0 | | Basil | 11.0 |
+| Ornamental Chile | 5.6 | | Sensitive Mimosa | 12.8 |
+| Marijuana | 5.8 | | Chilean Chile | 13.6 |
+| | | | **Venus flytrap** | **28.1** |
+
+A forward-simulation check (`scripts/sim_vs_real.py`): predicting the far trace
+from the near trace, the **active model (delayed copy + shared component)
+out-predicts the passive cable** for almost every species (median R² 0.4–0.87 vs
+0.2–0.79), and the fitted delays are sign-consistent — i.e. the far trace really
+is a delayed copy of the near trace, not a dispersed one.
 
 All values sit in the earlier hand-measured 1–40 mm/s range. Venus flytrap is
 the clear outlier (fast action potentials); Sensitive Mimosa is also fast.

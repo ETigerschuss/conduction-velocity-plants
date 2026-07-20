@@ -89,6 +89,64 @@ def fit_passive_kernel(near, far, fs, max_delay_s=15.0,
     return best
 
 
+def _shift(x, k):
+    y = np.zeros_like(x)
+    if k >= 0:
+        if k < len(x):
+            y[k:] = x[:len(x) - k]
+    else:
+        y[:len(x) + k] = x[-k:]
+    return y
+
+
+def two_component_fit(near, far, fs, maxlag=8.0):
+    """far(t) ≈ a·near(t) + b·near(t−τ).
+
+    a = instantaneous component (common-mode / shared-ground / volume conduction,
+    which a soil reference makes expected), b = delayed propagated component,
+    τ = propagation delay (sign gives which channel leads). This separation is the
+    right way to recover the delay under a strong shared component: the common
+    part loads onto a at lag 0, the true propagation onto b at lag τ.
+    Returns a, b, tau, r2, delayed_fraction = |b|/(|a|+|b|).
+    """
+    near = np.asarray(near, float); far = np.asarray(far, float)
+    fvar = np.sum((far - far.mean()) ** 2)
+    if fvar == 0:
+        return dict(a=np.nan, b=np.nan, tau=np.nan, r2=np.nan, delayed_fraction=np.nan)
+    best = dict(r2=-np.inf)
+    for tau in np.arange(-maxlag, maxlag + 1e-9, 1.0 / fs):
+        X = np.column_stack([near, _shift(near, int(round(tau * fs)))])
+        beta, *_ = np.linalg.lstsq(X, far, rcond=None)
+        r2 = 1.0 - np.sum((far - X @ beta) ** 2) / fvar
+        if r2 > best["r2"]:
+            a, b = float(beta[0]), float(beta[1])
+            best = dict(a=a, b=b, tau=float(tau), r2=float(r2),
+                        delayed_fraction=abs(b) / (abs(a) + abs(b)) if (abs(a) + abs(b)) else np.nan)
+    return best
+
+
+def passive_cable_fit(near, far, fs):
+    """Fit far as a passive-cable-propagated copy of near (Green's function),
+    returning best r2 and (D, tau, x, gain). A physical 'passive simulation'."""
+    from .simulate import passive_cable_propagate
+    far = np.asarray(far, float); fvar = np.sum((far - far.mean()) ** 2)
+    if fvar == 0:
+        return dict(r2=np.nan)
+    best = dict(r2=-np.inf)
+    for D in (1, 2, 4, 8, 16):
+        for tau in (1, 2, 3, 5):
+            for x in np.linspace(0.3, 3.0, 8):
+                fp = passive_cable_propagate(near, fs, D=D, tau=tau, x=x)
+                d = np.sum(fp * fp)
+                if d == 0:
+                    continue
+                g = np.sum(far * fp) / d
+                r2 = 1.0 - np.sum((far - g * fp) ** 2) / fvar
+                if r2 > best["r2"]:
+                    best = dict(r2=float(r2), D=D, tau=tau, x=float(x), gain=float(g))
+    return best
+
+
 def kernel_table(recs, cutoff: float = 2.0) -> pd.DataFrame:
     """Passive-kernel fit for every valid recording."""
     rows = []

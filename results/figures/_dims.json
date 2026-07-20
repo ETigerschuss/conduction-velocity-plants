@@ -27,6 +27,10 @@
   1425,
   1045
  ],
+ "cv_2tap_by_species.png": [
+  1440,
+  660
+ ],
  "cv_by_species.png": [
   1320,
   720
@@ -78,6 +82,14 @@
  "self_aligned_channels.png": [
   1800,
   1800
+ ],
+ "sim_prediction_r2.png": [
+  1440,
+  600
+ ],
+ "sim_vs_real_examples.png": [
+  1320,
+  1944
  ],
  "species_overview.png": [
   1210,

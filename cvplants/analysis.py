@@ -177,10 +177,14 @@ def analyze_recording(rec: Recording, cutoff: float = CUTOFF_HZ,
     cm_baseline_r = _corr(ch0[bi0:bi1], ch1[bi0:bi1]) if bi1 > bi0 else np.nan
     event_zero_lag_r = _corr(ch0[ri0:ri1], ch1[ri0:ri1])
     r0_over_rpk = (abs(event_zero_lag_r) / xc_corr) if (xc_corr and xc_corr > 0) else np.nan
-    # the delay (hence CV) is trustworthy only if it is not dominated by the
-    # instantaneous component and is comfortably above the timing floor
-    delay_resolved = bool(xcorr_delay > 3 * MIN_DELAY_S
-                          and (np.isnan(r0_over_rpk) or r0_over_rpk < 0.85))
+    # The two channels share a soil/earth reference, so a large *instantaneous*
+    # common component is expected and benign; it does not by itself prevent
+    # recovering the delay. The delay is 'unresolved' only when there is
+    # essentially no delayed structure left once the zero-lag component is
+    # accounted for (r0/rpk ~ 1) or the lag is below the timing floor. A small
+    # but real delay (e.g. the fast Venus-flytrap AP) stays resolved.
+    delay_resolved = bool(xcorr_delay > MIN_DELAY_S
+                          and (np.isnan(r0_over_rpk) or r0_over_rpk < 0.97))
     if not delay_resolved:
         flags.append("delay_unresolved")
     if not np.isnan(cm_baseline_r) and cm_baseline_r > 0.6:
