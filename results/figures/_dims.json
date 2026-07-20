@@ -1,0 +1,70 @@
+{
+ "active_passive_space.png": [
+  1080,
+  840
+ ],
+ "aligned_overlays_by_species.png": [
+  1800,
+  1860
+ ],
+ "attenuation_vs_broadening.png": [
+  900,
+  720
+ ],
+ "cable_vs_fhn_sim.png": [
+  1800,
+  540
+ ],
+ "cannabis_distance_delay.png": [
+  780,
+  600
+ ],
+ "cv_by_species.png": [
+  1320,
+  720
+ ],
+ "decrement_vs_distance.png": [
+  900,
+  720
+ ],
+ "delay_validation.png": [
+  780,
+  720
+ ],
+ "delay_vs_distance.png": [
+  900,
+  720
+ ],
+ "functional_dendrogram.png": [
+  1320,
+  660
+ ],
+ "kernel_example_active.png": [
+  1080,
+  480
+ ],
+ "kernel_example_passive.png": [
+  1080,
+  480
+ ],
+ "metrics_by_family.png": [
+  1800,
+  600
+ ],
+ "near_to_far_by_species.png": [
+  1440,
+  1620
+ ],
+ "near_to_far_transformation.png": [
+  1680,
+  516
+ ],
+ "peak_onset_asymmetry.png": [
+  1440,
+  660
+ ],
+ "species_overview.png": [
+  1210,
+  3432
+ ]
+}
