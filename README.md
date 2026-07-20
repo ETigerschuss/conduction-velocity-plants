@@ -93,6 +93,13 @@ cvplants/
   viz.py           per-recording, per-species and summary figures
   phylo.py         comparative analysis: functional profiles, clustering,
                    Mantel test vs taxonomy, cross-variable correlations
+  propagation.py   active-vs-passive discriminators (decrement/λ, delay-distance
+                   exponent, peak-onset asymmetry, passive-kernel fit)
+  simulate.py      passive cable + FitzHugh-Nagumo active-wave forward models
+scripts/active_passive.py  runs the above -> figures + docs/active_vs_passive.md
+docs/active_vs_passive.md  active/passive: analyses, ion channels, simulation
+docs/references/           grounded, cited domain notes (discriminators, ion
+                   channels, simulation, dataset design)
 scripts/extract_distances.py  cross-reference the spreadsheet -> data/distances.csv
 scripts/run_all.py     end-to-end: writes results/*.csv and results/figures/*.png
 scripts/comparative.py taxonomy analysis -> stats + comparative figures (REPORT.md)
