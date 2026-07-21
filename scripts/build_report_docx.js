@@ -174,10 +174,21 @@ kids.push(table(
   ],
   [3200, 6160]));
 
+// Comparison with the manual analysis
+kids.push(new Paragraph({ children: [new PageBreak()] }));
+kids.push(h1("Comparison with the manual analysis (Contreras et al.)"));
+kids.push(p([t("Validated against the paper "), new TextRun({ text: "Electrical Conduction Velocity Across Species of Rapid Movement and Non-Rapid Movement Plants", italics: true, size: 22 }), t(" (Contreras, Morales, Rojas, Serbe-Kamp, Marzullo; Plant Signaling & Behavior), Table 1. Their accepted-recording counts match this repo's WAV files species-by-species (176 total), so we analyse the same recordings; they report a per-species CV mean, so we compare mean-to-mean on the resolved-delay subset.")]));
+kids.push(p([b("Strong agreement: Pearson r = 0.94 across 13 species (0.98 excluding Sensitive Mimosa). "), t("The non-rapid group mean matches almost exactly (mine 8.0 ± 6.3 vs paper 7.7 ± 6.5 mm/s), and Venus flytrap agrees (~30 vs 35.3). Almost every species sits on the identity line within error.")]));
+kids.push(...figure("compare_to_paper_scatter.png", "This pipeline's CV vs the paper's manual CV, per species (mean ± SD). Points on the dashed identity line agree; only Sensitive Mimosa sits clearly below."));
+kids.push(...figure("compare_to_paper_bars.png", "Per-species CV, manual analysis vs automatic pipeline (mean ± SD)."));
+kids.push(p([b("The one discrepancy — Sensitive Mimosa (paper 32.4, mine 18.9) — is a detector limitation, not a real disagreement. "), t("Comparing my delay to their manual delay recording-by-recording, they match on the slow Mimosa recordings; on ~5 fast recordings (their delay ~0.2–0.4 s) my cross-correlation detector locks onto a slower secondary feature (one case: my 12.3 s vs their 0.37 s), pulling my mean down. Mimosa fires a sharp fast AP with a small inter-electrode delay; a fast-onset-aware delay estimate would bring it in line. Corrected metadata from the paper: Hierbabuena = Clinopodium douglasii (not Mentha), Chilean Chile = Capsicum baccatum; amplifier 0.2–130 Hz / ~55× / 10 kHz (not a 0.07–8.8 Hz SpikerBox).")]));
+
 // 10. References
 kids.push(new Paragraph({ children: [new PageBreak()] }));
 kids.push(h1("10. Key references"));
 const refs = [
+  "Contreras C, Morales M, Rojas P, Serbe-Kamp E, Marzullo T. Electrical Conduction Velocity Across Species of Rapid Movement and Non-Rapid Movement Plants. Plant Signaling & Behavior (the manual analysis compared here).",
+  "Madariaga D, et al. (2024). A library of electrophysiological responses in plants — a model of transversal education and open science. Plant Signal Behav 19(1):2310977.",
   "Fromm J, Lautner S (2007). Electrical signals and their physiological significance in plants. Plant, Cell & Environment 30:249–257.",
   "Mousavi SAR, Chauvin A, Pascaud F, Kellenberger S, Farmer EE (2013). GLUTAMATE RECEPTOR-LIKE genes mediate leaf-to-leaf wound signalling. Nature 500:422–426.",
   "Toyota M, Spencer D, Sawai-Toyota S, et al. (2018). Glutamate triggers long-distance, calcium-based plant defense signaling. Science 361:1112–1115.",

@@ -20,14 +20,16 @@ Environ*; Vodeneev, Akinchits & Sukhov 2015, *Plant Signal Behav*):
 | **Variation potential (VP)** | graded, decremental | ~1–10 mm/s | H⁺-ATPase inactivation driven by a xylem hydraulic/chemical wave | **passive** (courier not even electrical) |
 | **System potential (SP)** | graded, hyperpolarising | ~5–10 cm/min | H⁺-ATPase *activation* | passive |
 
-> **Hardware caveat that reframes everything.** The BackyardBrains Plant
-> SpikerBox front end is a **0.07–8.8 Hz band-pass** (gain 72×). The 0.07 Hz
-> high-pass removes the slow DC depolarisation that *defines* a VP and
-> differentiates the trace, so a passive VP can appear as a spiky, AC-coupled
-> waveform that superficially looks like an AP; the 8.8 Hz low-pass smears every
-> event toward a similar smooth shape. **Any "it looks like a spike ⇒ active"
-> argument is invalid on this rig.** This is exactly why the analyses below lean
-> on *distance-scaling* of the near→far transformation, not on raw shape.
+> **Hardware note (corrected against the paper).** The recordings were made with
+> a 2-channel prototype amplifier at **0.2–130 Hz band-pass, gain ~55×, 10 kHz**
+> (a few final Mimosa/Venus/Tomato measurements used a next-gen "SpikeStation" at
+> 0.1–20000 Hz, 10×). The FigShare WAVs here are 5 kHz. The 130 Hz upper cutoff
+> **preserves waveform shape** (an earlier draft wrongly assumed a Plant
+> SpikerBox 0.07–8.8 Hz front end and over-warned about shape smearing — removed).
+> The 0.2 Hz high-pass does attenuate the slow DC component of a variation
+> potential, so absolute VP amplitude is under-represented; the analyses below
+> still lean on *distance-scaling* of the near→far transformation, which is robust
+> to that.
 
 ---
 

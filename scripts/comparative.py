@@ -50,11 +50,14 @@ def main():
     print("\nKruskal-Wallis of CV across families:",
           phylo.kruskal_by_family(df, "cv_xcorr_mm_s"))
 
-    print("\n=== genus-pair check (same genus should be similar) ===")
-    cols = phylo.METRICS + ["cv_xcorr_mm_s"]
+    print("\n=== close-relative check ===")
+    from cvplants.io import genus
     cvsp = df[df["valid"] == True].groupby("species")["cv_xcorr_mm_s"].median()  # noqa: E712
-    for a, b in [("Mint", "Hierbabuena"), ("Chilean Chile", "Ornamental Chile")]:
-        print(f"{a} vs {b} (both {SPECIES_FAMILY[a]}):")
+    pairs = [("Chilean Chile", "Ornamental Chile"),   # same genus Capsicum
+             ("Mint", "Hierbabuena")]                 # same family, different genus
+    for a, b in pairs:
+        rel = "same genus" if genus(a) == genus(b) else f"same family ({SPECIES_FAMILY[a]}), different genus"
+        print(f"{a} ({genus(a)}) vs {b} ({genus(b)}) — {rel}:")
         sub = prof.loc[[a, b], phylo.METRICS].copy()
         sub["cv_mm_s"] = [cvsp[a], cvsp[b]]
         print(sub.round(3).to_string())

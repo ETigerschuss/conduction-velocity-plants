@@ -12,14 +12,17 @@ import numpy as np
 # Common (folder) name -> Latin name. Recovered from the CABG_Plantas library
 # notebook and the hardcoded CV table. Entries marked "approx" are genus-level
 # best guesses where the exact cultivar was not recorded.
+# Latin names per the paper (Contreras et al., Table 1). Note Hierbabuena is
+# Clinopodium douglasii (Lamiaceae) — a different genus from Mint (Mentha), and
+# the two chiles are different Capsicum species.
 SPECIES_LATIN = {
-    "Argentian Dollar":   "Plectranthus verticillatus",   # money/dollar plant (approx)
+    "Argentian Dollar":   "Plectranthus purpuratus",
     "Basil":              "Ocimum basilicum",
-    "Chilean Chile":      "Capsicum annuum",               # approx
+    "Chilean Chile":      "Capsicum baccatum",
     "Creeping Inchplant": "Callisia repens",
-    "Hierbabuena":        "Mentha spicata",                # spearmint
+    "Hierbabuena":        "Clinopodium douglasii",
     "Marijuana":          "Cannabis sativa",
-    "Mint":               "Mentha x piperita",             # approx
+    "Mint":               "Mentha spicata",
     "Ornamental Chile":   "Capsicum annuum",
     "Rosemary":           "Salvia rosmarinus",
     "Ruda":               "Ruta graveolens",
