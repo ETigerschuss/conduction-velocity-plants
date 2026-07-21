@@ -39,6 +39,40 @@ def passive_cable_propagate(near, fs, D=4.0, tau=3.0, x=1.0):
     return far * np.exp(-x / lam)
 
 
+def plant_ap_hh(t_end=8.0, dt=0.0005, stim_t=1.0, stim_dur=0.1, stim_amp=40.0,
+                Cm=1.0, EL=-130.0, ECl=-15.0, EK=-100.0,
+                gL=0.04, gCl=2.2, gK=6.0, gCaV=2.0,
+                tau_ca=0.5, tau_n=0.5, kCa=1.5, nCa=3,
+                vhalf_ca=-55.0, kslope_ca=9.0, vhalf_k=-80.0):
+    """Hodgkin-Huxley-type single-cell PLANT action potential (regenerative).
+
+    Ionic basis follows the established plant AP mechanism (Hedrich & Neher 2018;
+    Fromm & Lautner 2007; computational framework of Sukhov & Vodeneev 2009):
+    a stimulus admits Ca2+; Ca2+ gates a depolarising anion (Cl-) efflux; the
+    depolarisation opens *voltage-gated* Ca2+ influx (positive feedback → an
+    all-or-none, regenerative spike); a voltage-gated K+ efflux and Ca2+ removal
+    repolarise. Plants use Cl-/K+, NOT Na+, and the AP lasts ~1 s (vs ms in
+    animals). Parameters are illustrative (tuned to a flytrap-like AP), NOT fitted
+    conductances — surface, band-passed recordings cannot constrain those.
+    Returns (t, V, Ca).
+    """
+    n = int(t_end / dt)
+    t = np.arange(n) * dt
+    V = np.full(n, EL); Ca = np.zeros(n)
+    v, ca, nk = EL, 0.0, 0.0
+    for i in range(n):
+        V[i], Ca[i] = v, ca
+        stim = stim_amp if (stim_t <= t[i] < stim_t + stim_dur) else 0.0
+        mCl = ca ** nCa / (kCa ** nCa + ca ** nCa)                 # Ca-gated anion channel
+        mCaV = 1.0 / (1.0 + np.exp(-(v - vhalf_ca) / kslope_ca))   # V-gated Ca influx (regeneration)
+        ninf = 1.0 / (1.0 + np.exp(-(v - vhalf_k) / 10.0))         # V-gated K+ activation
+        iL = gL * (v - EL); iCl = gCl * mCl * (v - ECl); iK = gK * nk * (v - EK)
+        v += dt * (-(iL + iCl + iK)) / Cm
+        ca += dt * (stim + gCaV * mCaV - ca / tau_ca)
+        nk += dt * (ninf - nk) / tau_n
+    return t, V, Ca
+
+
 def fitzhugh_nagumo_1d(nx=400, dx=0.5, dt=0.01, t_end=200.0, D=1.0,
                        a=0.7, b=0.8, eps=0.08, I=0.5, stim_len=10,
                        probes=(120, 280)):
