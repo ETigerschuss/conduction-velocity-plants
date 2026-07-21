@@ -89,6 +89,45 @@ def fit_passive_kernel(near, far, fs, max_delay_s=15.0,
     return best
 
 
+def fast_onset_delay(rec, cutoff=8.0, thr_k=4.0):
+    """Delay from the first-arriving prominent deflection (wavefront onset) in
+    each channel, on a lightly-filtered signal that preserves sharp APs.
+
+    Motivation: the default cross-correlation can lock onto a later, larger event
+    when a channel has several peaks (e.g. fast Mimosa recordings). This targets
+    the first arrival instead. **Evaluated in scripts/delay_estimator_bakeoff.py
+    against the manual per-recording delays and found LESS accurate than the
+    default cross-correlation (larger error for every species), so it is NOT the
+    default — kept for reference / future work.**
+    """
+    from .preprocessing import lowpass, baseline_subtract
+    from .analysis import _response_window
+    from scipy.signal import find_peaks
+    fs = rec.fs
+    stim = rec.stim_start if rec.stim_start is not None else 1.0
+    bl = (max(0.0, stim - 3), stim)
+    ch = [lowpass(baseline_subtract(rec.data[:, k], fs, bl), fs, cutoff) for k in (0, 1)]
+    win = _response_window(rec)
+    i0, i1 = int(win[0] * fs), int(win[1] * fs)
+    bi0, bi1 = int(bl[0] * fs), int(bl[1] * fs)
+
+    def onset(sig):
+        seg = sig[i0:i1]
+        noise = np.std(sig[bi0:bi1]) or 1.0
+        s = seg * (np.sign(seg[np.argmax(np.abs(seg))]) or 1.0)
+        pk, _ = find_peaks(s, height=thr_k * noise, prominence=thr_k * noise, distance=int(0.1 * fs))
+        if not len(pk):
+            return np.nan
+        p = pk[0]
+        thr = 0.25 * s[p]
+        below = np.where(s[:p + 1] < thr)[0]
+        return (i0 + (below[-1] if len(below) else 0)) / fs
+    t0, t1 = onset(ch[0]), onset(ch[1])
+    if np.isnan(t0) or np.isnan(t1):
+        return np.nan
+    return abs(t1 - t0)
+
+
 def _shift(x, k):
     y = np.zeros_like(x)
     if k >= 0:

@@ -45,13 +45,38 @@ recording-by-recording:
   (e.g. one recording: my 12.3 s vs their 0.37 s → my CV 0.8 vs their 25). Those
   failures, plus three I flagged unresolved, pull my Mimosa mean down.
 
-Mimosa was tactile-stimulated and fires a sharp, fast AP with a small
-inter-electrode delay; my detector, tuned for the broad slow potentials of the
-other species, mis-picks it. **Fix:** a fast-event-aware delay (sharp-onset /
-first-derivative peak, or a narrower analysis window around the initial
-deflection) would recover the small delay and bring Mimosa in line — the machinery
-already exists in the 2-tap fit. Venus is largely unaffected because its spike is
-even sharper and its delay slightly larger.
+Mimosa was tactile-stimulated and fires a sharp, fast AP; several recordings have
+multiple sharp deflections, and the two channels' *largest* peaks can be
+different events (e.g. `18.48.14`: ch1 has APs at 13.5 s and 25 s; the detector
+pairs ch0's 13.5 s event with ch1's 25 s peak → a spurious 12 s delay).
+
+**A fast-onset estimator was implemented and rigorously tested — and rejected.**
+`scripts/delay_estimator_bakeoff.py` compares candidate estimators against the
+experimenters' own per-recording delays (the ground truth):
+
+| estimator | median &#124;error&#124; vs manual | Spearman vs manual |
+|---|---|---|
+| **default (cross-correlation)** | **0.20 s** | **0.79** |
+| fast-onset (first arrival) | 1.80 s | 0.03 |
+| first-event windowed xcorr | worse for all species | — |
+| nearest-prominent-peak pairing | worse for all species | — |
+
+The default **already matches the manual delays for every species** (Mimosa 0.14 s,
+Venus 0.12 s); the onset/first-event variants are far worse (essentially
+uncorrelated with the manual delays) because the multi-peak plant potentials
+offer many spurious early peaks to lock onto. A blanket "implausible delay"
+flag was also ruled out — large delays (9–15 s) are *legitimate* for the slow
+species (Mint, Ornamental Chile), so flagging them would discard real data, and
+removing Mimosa's single clear failure only shifts its mean 18.9 → 20.2.
+
+**Conclusion:** the Mimosa gap (≈19 vs 32) is not a fixable estimator flaw. It
+comes from a handful of genuinely ambiguous multi-peak recordings where the
+manual pick took the small early feature and the automatic cross-correlation took
+the dominant-waveform alignment — plus the very large intrinsic variance of the
+manual Mimosa CV itself (paper SD 21.6 ≈ its mean 32.4). Both analyses agree that
+Mimosa and Venus are the fast, rapid-movement outliers; the exact Mimosa mean is
+inherently uncertain. The `fast_onset_delay` function is kept in
+`cvplants/propagation.py` (documented as less accurate) for reference.
 
 ## Metadata corrected from the paper
 
