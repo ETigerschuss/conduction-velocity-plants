@@ -51,6 +51,10 @@
   900,
   720
  ],
+ "delay_estimator_bakeoff.png": [
+  1440,
+  600
+ ],
  "delay_validation.png": [
   780,
   720
@@ -74,6 +78,14 @@
  "metrics_by_family.png": [
   1800,
   600
+ ],
+ "mimosa_fail_diag.png": [
+  1140,
+  950
+ ],
+ "mimosa_july_zoom.png": [
+  1200,
+  900
  ],
  "near_to_far_by_species.png": [
   1440,
@@ -102,5 +114,13 @@
  "species_overview.png": [
   1210,
   3432
+ ],
+ "venus_ap_model.png": [
+  1800,
+  540
+ ],
+ "venus_electrode_asymmetry.png": [
+  1320,
+  660
  ]
 }
