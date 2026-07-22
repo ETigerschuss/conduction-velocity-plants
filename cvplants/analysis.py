@@ -19,9 +19,9 @@ from __future__ import annotations
 from dataclasses import dataclass, asdict
 
 import numpy as np
-from scipy.signal import correlate
+from scipy.signal import correlate, butter, filtfilt, find_peaks
 
-from .preprocessing import preprocess_channel
+from .preprocessing import preprocess_channel, baseline_subtract
 from .io import Recording
 
 # ---- tunable defaults ------------------------------------------------------
@@ -31,6 +31,42 @@ MIN_DELAY_S = 0.2        # below this the two peaks are effectively synchronous
 MAX_DELAY_S = 20.0       # physiological ceiling for the lag search
 MIN_XCORR = 0.4          # normalised cross-correlation below this = unreliable
 MIN_SNR = 3.0            # peak amplitude / baseline noise below this = weak
+
+# Rapid-movement plants fire a sharp, fast action potential; the manual analysis
+# times the FIRST prominent peak (the AP) on an AP-preserving filter, not the
+# dominant later deflection. Detecting them the default (slow) way underestimates
+# CV, so we switch to first-prominent-peak detection for these species.
+RAPID_MOVEMENT = {"Venus Flytrap", "Sensitive Mimosa"}
+
+
+def _first_prominent_delay(rec, lo=0.15, hi=15.0, hfrac=0.5, prom=0.3, dist_s=1.0):
+    """Delay (s) and leading channel from the FIRST prominent peak (≥ hfrac·max,
+    with prominence `prom`·max) in each channel, on a 0.15–15 Hz band-pass that
+    preserves the sharp AP. Reproduces the manual conduction-velocity for the
+    rapid-movement plants. Returns (delay_s, near_channel) or (None, None)."""
+    fs = rec.fs
+    stim = rec.stim_start if rec.stim_start is not None else 1.0
+    bl = (max(0.0, stim - BASELINE_S), stim)
+    b, a = butter(2, [lo / (fs / 2), min(hi / (fs / 2), 0.99)], btype="band")
+    win = _response_window(rec)
+    i0, i1 = int(win[0] * fs), int(win[1] * fs)
+
+    def first_peak(k):
+        seg = filtfilt(b, a, baseline_subtract(rec.data[:, k], fs, bl))[i0:i1]
+        if len(seg) < int(fs):
+            return None
+        s = seg * (np.sign(seg[np.argmax(np.abs(seg))]) or 1.0)
+        mx = s.max()
+        if mx <= 0:
+            return None
+        pk, _ = find_peaks(s / mx, height=hfrac, prominence=prom,
+                           distance=max(int(dist_s * fs), 1))
+        return pk[0] / fs if len(pk) else None
+
+    t0, t1 = first_peak(0), first_peak(1)
+    if t0 is None or t1 is None:
+        return None, None
+    return abs(t1 - t0), (0 if t0 <= t1 else 1)
 
 
 def _response_window(rec: Recording) -> tuple:
@@ -209,6 +245,23 @@ def analyze_recording(rec: Recording, cutoff: float = CUTOFF_HZ,
         flags.append("low_snr")
     valid = not any(f in flags for f in
                     ("near_synchronous", "low_waveform_similarity", "low_snr"))
+
+    # Rapid-movement plants: replace the delay with the first-prominent-peak
+    # (sharp AP) estimate on an AP-preserving filter — matches the manual CV.
+    if rec.species in RAPID_MOVEMENT:
+        fp_delay, fp_near = _first_prominent_delay(rec)
+        if fp_delay is not None and fp_delay > MIN_DELAY_S:
+            if fp_near != near_ch:                       # assignment flipped
+                near, far, near_ch, far_ch = far, near, far_ch, near_ch
+                attenuation = abs(far.peak_amp) / abs(near.peak_amp) if near.peak_amp else np.nan
+                broadening = far.fwhm / near.fwhm if near.fwhm else np.nan
+                rise_ratio = far.rise_time / near.rise_time if near.rise_time else np.nan
+                min_snr = min(near.snr, far.snr)
+            peak_delay = onset_delay = xcorr_delay = fp_delay
+            delay_resolved = True
+            flags = [f for f in flags if f != "near_synchronous"]
+            flags.append("rapid_first_prominent")
+            valid = min_snr >= MIN_SNR
 
     # conduction velocity (needs distance and a trustworthy delay)
     def cv(delay):
