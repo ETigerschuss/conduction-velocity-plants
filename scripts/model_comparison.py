@@ -169,35 +169,31 @@ def analyse():
 
 
 def bars(df, out):
+    # Waveform (gain-free) fit only. The amplitude (gain=1) fit is dropped from
+    # the figure: it is uninterpretable (active R² plunges to <-50 because the far
+    # amplitude is not preserved, and that drop is confounded by electrode
+    # coupling). It remains in model_comparison.csv for the record.
     order = (df[df.norm == "norm"].groupby("species")["passive_gap"].median()
              .sort_values().index.tolist())
-    fig, axes = plt.subplots(2, 1, figsize=(13, 10), sharex=True)
-    specs = [("norm", "WAVEFORM fit — gain free (shape only; the trustworthy comparison)", (0, 1.02), None),
-             ("raw", "AMPLITUDE fit — gain fixed = 1 (must also reproduce the far amplitude)", (-2, 1.02), -2)]
-    for ax, (norm, title, ylim, floor) in zip(axes, specs):
-        sub = df[df.norm == norm]
-        x = np.arange(len(order))
-        for off, key, col, lab in [(-0.2, "r2_active", "#1f77b4", "active (delay [+ gain])"),
-                                   (0.2, "r2_passive", "#d1495b", "passive (+ dispersion)")]:
-            meds = [np.nanmedian(sub[sub.species == s][key]) for s in order]
-            if floor is not None:
-                meds = [max(v, floor) for v in meds]
-            ax.bar(x + off, meds, 0.38, color=col, label=lab, zorder=1)
-            for i, s in enumerate(order):
-                vals = sub[sub.species == s][key].values
-                yv = np.clip(vals, floor, None) if floor is not None else vals
-                ax.scatter(np.full(len(vals), i + off) + np.random.normal(0, 0.03, len(vals)),
-                           yv, s=10, color="#222", alpha=0.5, zorder=3)
-        ax.set_ylabel("prediction R²"); ax.set_title(title, fontsize=11)
-        ax.set_ylim(*ylim); ax.axhline(0, color="k", lw=0.6)
-        ax.grid(axis="y", ls="--", alpha=0.3); ax.legend(fontsize=8, loc="lower right")
-        if floor is not None:
-            ax.text(0.01, 0.03, "active R² falls far below the floor for most species: a non-decremental "
-                    "(g=1) model cannot hold — but the amplitude drop is confounded by electrode coupling, "
-                    "so amplitude is not a reliable active/passive discriminator.",
-                    transform=ax.transAxes, fontsize=7.5, color="#7a2020", va="bottom")
-    axes[1].set_xticks(range(len(order)))
-    axes[1].set_xticklabels(order, rotation=40, ha="right", fontsize=8)
+    sub = df[df.norm == "norm"]
+    fig, ax = plt.subplots(figsize=(13, 5.5))
+    x = np.arange(len(order))
+    for off, key, col, lab in [(-0.2, "r2_active", "#1f77b4", "active (delay + gain)"),
+                               (0.2, "r2_passive", "#d1495b", "passive (+ dispersion)")]:
+        meds = [np.nanmedian(sub[sub.species == s][key]) for s in order]
+        ax.bar(x + off, meds, 0.38, color=col, label=lab, zorder=1)
+        for i, s in enumerate(order):
+            vals = sub[sub.species == s][key].values
+            ax.scatter(np.full(len(vals), i + off) + np.random.normal(0, 0.03, len(vals)),
+                       vals, s=10, color="#222", alpha=0.5, zorder=3)
+    ax.set_ylabel("waveform prediction R²  (far from near)"); ax.set_ylim(0, 1.02)
+    ax.grid(axis="y", ls="--", alpha=0.3); ax.legend(fontsize=9, loc="lower right")
+    ax.set_xticks(range(len(order)))
+    ax.set_xticklabels(order, rotation=40, ha="right", fontsize=8)
+    ax.set_title("Active vs passive waveform fit of the far trace, per species "
+                 "(each recording a dot, bar = median).\nPassive ⊇ active (nested), so the GAP is how much "
+                 "dispersion is needed: small gap = shape-preserving (active-like), large = dispersive (passive-like).",
+                 fontsize=11)
     fig.suptitle("Active (delay+gain) vs passive (delay+gain+dispersion) fit of far from near, per species\n"
                  "(each recording a dot, bar = median). Top: waveform shape only. Bottom: must also match the "
                  "measured amplitude.\nPassive ≥ active by construction (nested); a SMALL gap = shape/amplitude "

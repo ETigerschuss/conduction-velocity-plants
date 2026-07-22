@@ -64,131 +64,123 @@ const kids = [];
 kids.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 400, after: 60 },
   children: [new TextRun({ text: "Conduction Velocity and Signal Propagation in Plants", bold: true, size: 40, color: ACCENT })] }));
 kids.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 40 },
-  children: [new TextRun({ text: "An automatic two-channel analysis pipeline, validated against the manual analysis", size: 24, color: "555555" })] }));
+  children: [new TextRun({ text: "An automatic two-channel pipeline: from reproducing the manual analysis to predicting the propagation mode", size: 23, color: "555555" })] }));
 kids.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 240 },
   children: [new TextRun({ text: "13 species · 176 recordings (166 analysed) · github.com/ETigerschuss/conduction-velocity-plants", size: 18, color: "888888" })] }));
 kids.push(rule());
 
-// -------- 1. Overview
-kids.push(h1("Overview and what to take from this report"));
-kids.push(p([t("Two recording electrodes sit inline downstream of a wound / touch / flame stimulus; the propagating potential reaches the "), b("near"), t(" electrode first and the "), b("far"), t(" electrode later. We built an automatic analysis pipeline and asked four questions.")]));
-kids.push(p([b("1. Does the automatic pipeline reproduce the manual conduction-velocity result? "), t("Yes — Pearson r = 0.94 across 13 species (0.99 excluding one species), and the manual per-recording numbers are recoverable exactly (Section 4).")]));
-kids.push(p([b("2. How does the signal change from the near to the far electrode? "), t("It "), b("attenuates"), t(" (far ≈ 0.4× the near amplitude) and mildly "), b("broadens"), t(", while largely keeping its shape (Section 6).")]));
-kids.push(p([b("3. Do these properties track evolutionary relationship? "), t("No — congeners differ as much as unrelated species (Section 7).")]));
-kids.push(p([b("4. Is propagation active or passive? "), t("This cannot be settled cleanly with two surface electrodes, but the fast, rapid-movement species (Venus flytrap, Sensitive Mimosa) preserve waveform shape best and the slow species disperse most (Section 8). A biophysical AP model reproduces the recorded Venus waveform (Section 9).")]));
-kids.push(p([it("A note on figures. This is a working report; not every figure belongs in the manuscript. Section 12 lists which figures we consider manuscript candidates versus supporting / diagnostic material.")]));
+// -------- 1. Overview (the 5-part story)
+kids.push(h1("Overview: the argument in five steps"));
+kids.push(p([t("Two electrodes sit inline downstream of a stimulus; the propagating potential reaches the "), b("near"), t(" electrode first and the "), b("far"), t(" electrode later. Building on the open pipeline of Madariaga et al. (2024), we extend it into an automatic analysis and make five linked claims.")]));
+kids.push(p([b("1. A modified pipeline reproduces the manual analysis. "), t("With plant-class-aware peak detection it matches the hand-measured conduction velocities at Pearson r = 0.94 (0.99 excluding one species), and recovers the published per-recording numbers exactly (Section 3).")]));
+kids.push(p([b("2. It detects the two potential types. "), t("Recordings separate cleanly into fast action potentials and slow variation potentials — the two signal classes Mimosa and others are known to fire (Section 4).")]));
+kids.push(p([b("3. It compares the two channels. "), t("From near to far the signal attenuates (~0.4×) and mildly broadens, while largely preserving its shape (Section 5).")]));
+kids.push(p([b("4. It models the waveform and propagation to predict active vs passive. "), t("Using what is known about fast-moving plants as a reference, the fits place each species on an active↔passive spectrum and yield a per-species prediction for the untested species (Section 6). We predict, not conclude.")]));
+kids.push(p([b("5. It groups species by every parameter and tests phylogeny. "), t("Clustering on all parameters (CV, attenuation, broadening, waveform fidelity, dispersion, potential type) shows the propagation profile is "), b("not"), t(" phylogenetically structured — e.g. Solanaceae are not internally more similar than average (Section 7).")]));
+kids.push(p([it("This is a working report; Section 10 lists which figures are manuscript candidates versus supporting material.")]));
 
 // -------- 2. Methods
 kids.push(h1("Methods"));
-kids.push(p([t("Each channel is baseline-subtracted and low-pass filtered for detection; the earlier-peaking channel is labelled "), b("near"), t(". Inter-channel delay is measured by windowed cross-correlation (primary), with a peak-to-peak cross-check and — because the two electrodes share a soil/earth reference — a common-mode-robust 2-tap model (Section 5). "), b("Peak detection differs by plant class, as in the manual analysis: "), t("the slow (non-rapid) plants are timed on the dominant deflection, but the rapid-movement plants (Venus flytrap, Sensitive Mimosa) fire a sharp, fast action potential, so they are timed on the "), it("first prominent peak"), t(" (≥ 0.5× the maximum) on an AP-preserving 0.15–15 Hz band-pass — the default low-pass over-smooths the AP and mistimes it. CV = inter-electrode distance / delay; distances are cross-referenced from the “Todo Data Resumen” spreadsheet (166/176 recordings). Transformation metrics: amplitude attenuation (far/near peak), temporal broadening (far/near FWHM), waveform similarity. Recordings are quality-gated; 166/176 pass. The pipeline reports three CV columns per recording — "), it("cv_xcorr"), t(" (default), "), it("cv_2tap"), t(" (common-mode-robust), and "), it("cv_manual"), t(" (distance ÷ the experimenters’ manual delay).")]));
+kids.push(p([t("Each channel is baseline-subtracted and filtered; the earlier-peaking channel is labelled "), b("near"), t(". "), b("Peak detection is plant-class-aware, as in the manual analysis: "), t("slow (variation-potential) recordings are timed on the dominant deflection, while rapid-movement plants (Venus flytrap, Sensitive Mimosa) fire a sharp, often biphasic action potential and are timed on the "), it("first prominent peak"), t(" (≥ 0.5× max) on an AP-preserving 0.15–15 Hz band-pass. Inter-channel delay uses windowed cross-correlation, with a common-mode-robust 2-tap model where the shared soil reference dominates (Section 5). CV = inter-electrode distance / delay; distances come from the “Todo Data Resumen” spreadsheet (166/176 recordings). Transformation metrics: amplitude attenuation, temporal broadening (FWHM), waveform similarity. The pipeline reports three CV columns — "), it("cv_xcorr"), t(", "), it("cv_2tap"), t(", and "), it("cv_manual"), t(" (distance ÷ the experimenters’ manual delay).")]));
 
-// -------- 3. Conduction velocity
-kids.push(h1("Conduction velocity"));
-kids.push(p([t("Median CV ranges from ~2 mm/s (Argentian Dollar) to ~33 mm/s (Venus flytrap). The estimate is internally consistent: the delay scales with electrode distance (ρ = 0.36, p = 3×10⁻⁶) and CV is independent of the spacing used (ρ ≈ 0), as a true velocity must be.")]));
+// ============ PART 1 ============
+kids.push(pageBreak());
+kids.push(h1("Reproducing the manual analysis (Contreras et al.)"));
+kids.push(p([t("We validate against the manual analysis in "), it("Electrical Conduction Velocity Across Species of Rapid Movement and Non-Rapid Movement Plants"), t(" (Contreras, Morales, Rojas, Serbe-Kamp, Marzullo), Table 1. Both analyses use the same recordings.")]));
+kids.push(p([b("Strong agreement: Pearson r = 0.94 across 13 species (0.99 excluding Sensitive Mimosa). "), t("The non-rapid group mean matches almost exactly (automatic 8.0 vs manual 7.7 mm/s); Venus flytrap agrees (32.9 vs 35.3). Using the experimenters’ own delays, the "), it("cv_manual"), t(" column reproduces the manuscript exactly (Mimosa 30.6, Venus 35.7 mm/s).")]));
 kids.push(...figure("cv_by_species.png", "Conduction velocity by species (resolved-delay recordings). Box = IQR, red = median, dots = recordings."));
+kids.push(...figure("compare_to_paper_scatter.png", "Automatic CV vs manual CV, per species (mean ± SD). Points on the identity line agree; only Sensitive Mimosa sits clearly below (see text)."));
+kids.push(...figure("delay_validation.png", "The underlying agreement: our measured inter-channel delay vs the manual delay (Tiempo), recording by recording, on the identity line."));
+kids.push(p([b("What made this work — plant-class-aware detection. "), t("The rapid-movement plants needed the first-prominent-peak detector (Methods): the default low-pass over-smooths the sharp AP and mistimes it. Switching detectors reproduced the manual delay for most Mimosa/Venus recordings and raised Venus from 29.7 to 32.9 mm/s. For non-rapid plants the default cross-correlation already matched best (a fast-onset estimator and three variants were tested and rejected — median error 0.20 s vs 1.80 s; bakeoff figure).")]));
+kids.push(...figure("delay_estimator_bakeoff.png", "Delay-estimator bakeoff for the non-rapid plants (lower = better): the default cross-correlation wins for every species. Rapid plants use first-prominent detection instead (Methods)."));
+kids.push(p([b("The residual Sensitive Mimosa gap (automatic 19.9 vs manual 32.4) is a measurement-floor limit, not a code error. "), t("On the fast (July) Mimosa recordings, isolating the sharp AP (high-pass) and cross-correlating gives ≈ 0 s — the AP reaches both closely-spaced electrodes essentially simultaneously — while the same test recovers the slower recordings (1.07 vs manual 1.04 s). Those manual 0.2–0.34 s values sit at the timing floor, which is why Mimosa’s manual SD (21.6) nearly equals its mean. Part of Mimosa’s spread is also that it contains two signal types (Section 4). Metadata corrected from the paper: Hierbabuena = Clinopodium douglasii; Chilean Chile = Capsicum baccatum; amplifier ≈ 0.2–130 Hz.")]));
 
-// -------- 4. Validation
+// ============ PART 2 ============
 kids.push(pageBreak());
-kids.push(h1("Validation against the manual analysis (Contreras et al.)"));
-kids.push(p([t("Validated against "), it("Electrical Conduction Velocity Across Species of Rapid Movement and Non-Rapid Movement Plants"), t(" (Contreras, Morales, Rojas, Serbe-Kamp, Marzullo; Plant Signaling & Behavior), Table 1. Both analyses use the same recordings.")]));
-kids.push(p([b("Strong agreement: Pearson r = 0.94 across 13 species (0.99 excluding Sensitive Mimosa). "), t("The non-rapid group mean matches almost exactly (automatic 8.0 ± 6.3 vs manual 7.7 ± 6.5 mm/s), and Venus flytrap agrees (32.9 vs 35.3). Using the experimenters’ own delays, the "), it("cv_manual"), t(" column reproduces the manuscript exactly (Mimosa 30.6, Venus 35.7 mm/s).")]));
-kids.push(...figure("compare_to_paper_scatter.png", "Automatic CV vs the manual CV, per species (mean ± SD). Points on the dashed identity line agree; only Sensitive Mimosa sits clearly below (see text)."));
-kids.push(...figure("delay_validation.png", "The underlying agreement: our measured inter-channel delay vs the experimenters’ manual delay (Tiempo), recording by recording, on the identity line."));
-kids.push(p([b("The rapid-plant peak-detection fix. "), t("The rapid-movement plants needed a different peak detector (Methods): switching to first-prominent-peak detection on an AP-preserving filter recovers the sharp AP and reproduces the manual delay for the majority of these recordings, and it raised Venus flytrap from 29.7 to 32.9 mm/s (vs manual 35.3). For non-rapid plants the default cross-correlation already matches the manual delays best (a fast-onset estimator and three variants were tested and were less accurate — median error 0.20 s vs 1.80 s; see the bakeoff figure).")]));
-kids.push(p([b("The remaining Sensitive Mimosa gap (automatic 19.9 vs manual 32.4) is a measurement-floor limit, not a code error. "), t("On the slow Mimosa recordings the two delays match. The gap is a handful of fast recordings (July batch) whose inter-electrode delay is "), b("unresolvable"), t(": isolating the sharp AP (high-pass) and cross-correlating gives ≈ 0 s — the AP reaches both closely-spaced electrodes essentially simultaneously — while the same test recovers the delay on the slower recordings (e.g. 1.07 vs manual 1.04 s). The manual 0.2–0.34 s values on those recordings sit at the timing floor, which is exactly why Mimosa’s manual SD (21.6) nearly equals its mean (32.4). Both analyses agree Mimosa is a fast, rapid-movement outlier; the exact value is intrinsically uncertain. To reproduce the manuscript number, use "), it("cv_manual"), t(".")]));
-kids.push(...figure("delay_estimator_bakeoff.png", "Delay-estimator bakeoff against the manual per-recording delays for the non-rapid plants (lower = better). The default cross-correlation wins for every species; the fast-onset variants were rejected on this evidence. (Rapid plants use first-prominent detection instead — Methods.)"));
-kids.push(p([b("Metadata corrected from the paper: "), t("Hierbabuena = Clinopodium douglasii (not Mentha); Chilean Chile = Capsicum baccatum; Argentian Dollar = Plectranthus purpuratus. Amplifier passband ~0.2–130 Hz (a custom rig), not the 0.07–8.8 Hz stock SpikerBox.")]));
+kids.push(h1("Two potential types: action potentials and variation potentials"));
+kids.push(p([t("Mimosa pudica and other plants fire "), b("two"), t(" kinds of electrical signal: a fast, often biphasic "), b("action potential"), t(" (non-damaging stimuli; ~1 s; ~2–3 cm/s) and a slow, long-lasting "), b("variation potential"), t(" (wounding; tens–hundreds of seconds; decremental) — Volkov 2010; Fromm & Lautner 2007. Classifying each recording by the duration of its dominant deflection gives a clearly "), b("bimodal"), t(" distribution — 120 AP-like (< 2 s) and 56 VP-like (> 2 s). Sensitive Mimosa itself splits 14 AP-like / 4 VP-like and Venus flytrap 13 / 5, so their wide CV spread partly reflects a mixture of the two types.")]));
+kids.push(p([b("The type changes the model fit (a preview of Section 6). "), t("VP-like recordings need about "), b("twice"), t(" the passive dispersion σ of AP-like ones (0.45 vs 0.25 s, p ≈ 0.05) and conduct slightly slower — i.e. VP-like are more passive/decremental and AP-like more shape-preserving/active. A biophysical action-potential model (Section 6) is the right model for the AP-type recordings; the VP-type would need a passive/hydraulic model instead.")]));
+kids.push(...figure("potential_types.png", "Each recording classified as a fast action potential (AP-like, < 2 s) or slow variation potential (VP-like, > 2 s). Left: bimodal duration distribution. Middle: VP-like need more passive dispersion (more decremental). Right: AP-like conduct faster."));
 
-// -------- 5. Channel integrity
+// ============ PART 3 ============
 kids.push(pageBreak());
-kids.push(h1("Channel integrity: the shared reference and how the delay is recovered"));
-kids.push(p([t("The two channels are "), b("correlated, and that is expected"), t(": both electrodes share a soil/earth reference, so any whole-plant potential or reference fluctuation appears in both (baseline correlation pooled r ≈ 0.66). This is a normal referential montage, not amplifier crosstalk — and it does "), b("not"), t(" prevent measuring the delay. A common-mode-robust 2-tap model, far(t) = a·near(t) + b·near(t−τ), separates the shared/instantaneous part (a) from the propagated part (b) at lag τ; across species the delayed fraction is 0.68–0.90 and τ is sign-consistent (75–100%). This is why Venus flytrap’s fast CV is genuine — a small electrode spacing gives a small "), it("but real"), t(" delay plus strong volume-conduction correlation.")]));
-kids.push(...figure("crosstalk_raw_examples.png", "Both channels, full trace and pre-stimulus baseline zoom. Mimosa: baseline r = 0.96 (shared slow wave via the common ground). Cannabis: r = 0.20 (weakly coupled, clean delay). Venus: a sharp spike in both channels close together — a small real delay plus volume conduction."));
-
-// -------- 6. Near->far transformation
-kids.push(pageBreak());
-kids.push(h1("How the signal changes from near to far"));
-kids.push(p([t("From the near to the far electrode the potential "), b("attenuates"), t(" (far/near amplitude median ≈ 0.44), "), b("broadens"), t(" (FWHM ratio ≈ 1.31), yet largely "), b("preserves its shape"), t(" (waveform correlation ≈ 0.80). Within-species spread is large — it exceeds the between-species differences.")]));
-kids.push(...figure("self_aligned_channels.png", "Near vs far response per species, each self-aligned on its own peak (arbitrary gap), BOTH normalised to the near peak so the far amplitude drop is visible. Thick = median, band = IQR. The far/near amplitude ratio is printed per panel (e.g. Argentian Dollar 0.15, Ornamental Chile 0.19; Tomato and the chiles preserve amplitude best)."));
-kids.push(...figure("near_to_far_transformation.png", "The same three metrics pooled across all recordings: amplitude ratio (median 0.44), width ratio (1.31), and waveform similarity (0.80)."));
+kids.push(h1("From near to far: comparing the two channels"));
+kids.push(p([t("The two channels are "), b("correlated by design"), t(" — both electrodes share a soil/earth reference, so any whole-plant potential appears in both (baseline r ≈ 0.66). This is a normal referential montage, not crosstalk, and it does not prevent measuring the delay (a common-mode-robust 2-tap model separates the shared part from the propagated part).")]));
+kids.push(...figure("crosstalk_raw_examples.png", "Both channels, full trace and pre-stimulus baseline. Mimosa: baseline r = 0.96 (shared slow wave via the common ground). Cannabis: r = 0.20 (clean delay). Venus: a sharp spike in both channels close together."));
+kids.push(p([b("From near to far the potential attenuates and broadens, while largely preserving its shape "), t("(far/near amplitude median ≈ 0.44, FWHM ratio ≈ 1.31, waveform correlation ≈ 0.80). Within-species spread exceeds between-species differences.")]));
+kids.push(...figure("self_aligned_channels.png", "Near vs far response per species, each self-aligned on its own peak (arbitrary gap), both normalised to the near peak so the far amplitude drop is visible. Thick = median, band = IQR; far/near ratio printed per panel."));
+kids.push(...figure("near_to_far_transformation.png", "The three metrics pooled across all recordings: amplitude ratio (median 0.44), width ratio (1.31), waveform similarity (0.80)."));
 kids.push(...figure("attenuation_vs_broadening.png", "Attenuation vs broadening co-vary: signals that lose amplitude also disperse (passive low-pass filtering); those that keep amplitude keep their shape."));
 
-// -------- 7. Comparative
+// ============ PART 4 ============
 kids.push(pageBreak());
-kids.push(h1("Do these properties track evolutionary relationship?"));
-kids.push(p([t("No. A Mantel test between functional distance (the three transformation metrics) and taxonomic distance gives r = −0.02, p = 0.50; Kruskal–Wallis by family is non-significant (p > 0.29). Congeners diverge as much as unrelated species — the two "), b("Capsicum"), t(" chiles are among the most different pairs. The transformation reflects the biophysics of each conduction event, not species identity.")]));
-kids.push(...figure("functional_dendrogram.png", "Species clustered by their near→far transformation profile; leaf colour = taxonomic family. Families are scattered, not clustered — no phylogenetic signal."));
-
-// -------- 8. Active vs passive
-kids.push(pageBreak());
-kids.push(h1("Active or passive propagation? (what the data can and cannot say)"));
-kids.push(p([t("Plant signals span a spectrum from self-regenerating action potentials (AP; all-or-none, non-decremental, shape-preserving) to decremental variation potentials (VP; graded, dispersive, carried by a xylem hydraulic/chemical wave). "), b("Two surface electrodes cannot settle this cleanly"), t(", and two tempting metrics are confounded: (i) amplitude/gain reflects "), it("electrode coupling"), t(" as much as decrement — Venus’s far/near ratio is scattered 0.12–7.33 because of its asymmetric hook/stake montage (below); and (ii) a flexible delayed-copy model will always out-fit a cable model because it has an extra free parameter. We therefore rely on "), b("amplitude-independent, shape-based"), t(" signals.")]));
-kids.push(p([b("On those robust signals, a consistent spectrum emerges. "), t("The peak−onset asymmetry (does the peak lag the onset, i.e. dispersion?) is ≈0 for Venus flytrap and Sensitive Mimosa and large for the mints; the propagation delay scales linearly with distance (exponent ≈ 0.99, i.e. constant velocity, not diffusive). Together these place the fast rapid-movement species at the shape-preserving (AP-like) end and the mints at the dispersive (VP-like) end — a spectrum of waveform fidelity that crosses family lines. This is consistent with, but not proof of, active vs passive conduction; the definitive tests need new experiments (Section 11).")]));
-kids.push(...figure("peak_onset_asymmetry.png", "Peak−onset delay asymmetry (amplitude-independent): ≈0 = rigid translation / shape-preserving (Venus, Mimosa), large positive = dispersion (mints)."));
-kids.push(...figure("delay_vs_distance.png", "Delay vs distance across recordings: linear through ~origin (exponent ≈ 0.99) indicates constant-velocity (ballistic) propagation, not diffusion (which would give exponent 2)."));
-kids.push(p([b("A direct, optimised model comparison. "), t("For every recording we fit the far trace from the near trace with an "), b("active"), t(" model (delayed copy, far ≈ g·near(t−τ)) and a "), b("passive"), t(" model (delayed + dispersed, far ≈ g·[Gaussian(σ)*near](t−τ)), each optimised to its best parameters, under two conventions: a "), it("waveform fit"), t(" (gain free — shape only) and an "), it("amplitude fit"), t(" (gain fixed = 1 — the model must also reproduce the measured far amplitude). Two care points fixed here: the near/far label is taken on an AP-preserving 15 Hz filter (the 2 Hz detection filter mis-orders the sharp Venus AP), and both models are optimised over a fine grid. The passive model contains the active model at σ = 0, so passive ≥ active by construction — the "), b("gap"), t(" is how much dispersion is needed. On the waveform fit, Venus flytrap and Sensitive Mimosa have the highest R² and the smallest gap (shape-preserving, active-like), the mints the largest (dispersive). The amplitude fit collapses for the active model — a non-decremental (g = 1) model cannot reproduce the far amplitude — but that amplitude drop is confounded by electrode coupling, so amplitude is not a reliable discriminator (which is why we trust the waveform fit).")]));
-kids.push(...figure("model_comparison_bars.png", "Active vs passive fit per species (each recording a dot, bar = median). Top: waveform (shape) fit — the trustworthy comparison; the active↔passive gap is smallest for the fast rapid-movement species. Bottom: amplitude fit (gain = 1) — the active model collapses because the amplitude is not preserved (confounded by electrode coupling)."));
-kids.push(...figure("model_fit_examples.png", "Example fits (near/far corrected): near (grey), real far (red), best active (blue dashed) and passive (green dotted) predictions. Venus/Mimosa are well fit by a near-pure delay; the slower species need dispersion."));
-kids.push(p([b("Two potential types, and the model fit follows the type. "), t("Mimosa pudica and other plants fire "), b("two"), t(" kinds of electrical signal: a fast, often biphasic "), b("action potential"), t(" (non-damaging stimuli; ~1 s; ~2–3 cm/s) and a slow, long-lasting "), b("variation potential"), t(" (wounding; tens–hundreds of seconds; decremental) — Volkov 2010; Fromm & Lautner 2007. Classifying each recording by the duration of its dominant deflection gives a clearly bimodal distribution — 120 AP-like (< 2 s) and 56 VP-like (> 2 s) — and the two types fit the models differently: VP-like recordings need about "), b("twice"), t(" the passive dispersion σ of AP-like ones (0.45 vs 0.25 s, p ≈ 0.05) and conduct slightly slower, i.e. VP-like are more passive/decremental and AP-like more shape-preserving/active. Sensitive Mimosa itself splits 14 AP-like / 4 VP-like, so its wide CV spread partly reflects a mixture of the two signal types; the fast AP recordings are what set the rapid-plant velocity.")]));
-kids.push(...figure("potential_types.png", "Each recording classified as a fast action potential (AP-like, < 2 s) or slow variation potential (VP-like, > 2 s). Left: the bimodal duration distribution. Middle: VP-like need more passive dispersion (more decremental). Right: AP-like conduct faster."));
-kids.push(p([b("Why Venus flytrap’s amplitude looks decremental but is not diagnostic. "), t("Its far/near amplitude ratio is scattered and >1 in 31% of recordings — unlike the consistent <1 decrement of the symmetric-electrode plants — because Venus used an asymmetric montage (hook around the trap neck + stake alongside the lobe). The amplitude ratio therefore reflects electrode coupling, not decrement; on the shape axis Venus is firmly shape-preserving.")]));
-kids.push(...figure("venus_electrode_asymmetry.png", "Amplitude ratio (far/near, log scale) per species. Venus is scattered and often >1 (asymmetric electrodes), unlike the consistent <1 decrement of symmetric-electrode plants."));
-
-// -------- 9. Simulation
-kids.push(pageBreak());
-kids.push(h1("Simulating propagation"));
-kids.push(p([b("Passive cable vs active wave. "), t("A passive cable (Green’s function of τ ∂V/∂t = λ² V_xx − V) makes the far signal a delayed, decayed and dispersed copy of the near one; a FitzHugh–Nagumo active cable launches a travelling pulse of constant amplitude and velocity. The amplitude-vs-distance panel is the single cleanest conceptual discriminator.")]));
+kids.push(h1("Active or passive? Modelling and predicting the propagation mode"));
+kids.push(p([t("Plant signals span a spectrum from self-regenerating action potentials (active; all-or-none, non-decremental, shape-preserving) to decremental variation potentials (passive; graded, dispersive). "), b("Two surface electrodes cannot settle this definitively"), t(", so we make a "), b("prediction"), t(", not a conclusion, using two amplitude-independent handles.")]));
+kids.push(p([b("How we fit — and what we discarded. "), t("For every recording we predict the far trace from the near trace with an "), b("active"), t(" model (delayed copy, far ≈ g·near(t−τ)) and a "), b("passive"), t(" model (delayed + dispersed, far ≈ g·[Gaussian(σ)*near](t−τ)), each optimised to its best parameters. We fit the "), it("waveform"), t(" (gain free — shape only), which is the trustworthy comparison. We "), b("dropped the amplitude fit"), t(" (gain fixed = 1): it is uninterpretable — the active model collapses (R² < −50) because the far amplitude is not preserved, but that drop is confounded by electrode coupling (Venus’s asymmetric hook/stake montage gives far/near ratios scattered 0.12–7.3), so amplitude cannot discriminate active from passive. The passive model contains the active model (σ = 0), so the "), b("gap"), t(" between them is how much dispersion is needed.")]));
+kids.push(...figure("model_comparison_bars.png", "Active vs passive waveform fit per species (each recording a dot, bar = median). Venus flytrap and Sensitive Mimosa have the highest R² and smallest gap (shape-preserving, active-like); the mints need the most dispersion (passive-like)."));
+kids.push(...figure("model_fit_examples.png", "Example fits (near/far corrected): near (grey), real far (red), best active (blue dashed) and passive (green dotted) predictions."));
+kids.push(p([b("Two amplitude-independent discriminators agree. "), t("Peak−onset asymmetry (dispersion) is ≈ 0 for Venus/Mimosa and large for the mints; the delay scales linearly with distance (exponent ≈ 0.99 — constant velocity, not diffusion).")]));
+kids.push(...figure("peak_onset_asymmetry.png", "Peak−onset asymmetry (amplitude-independent): ≈ 0 = rigid translation (active), large = dispersion (passive)."));
+kids.push(...figure("delay_vs_distance.png", "Delay vs distance: linear through ~origin (exponent ≈ 0.99) = constant-velocity propagation, not diffusion."));
+kids.push(p([b("Simulations reproduce the waveforms. "), t("A passive cable makes the far signal a delayed, decayed, dispersed copy of the near one; a FitzHugh–Nagumo active cable gives a constant-amplitude travelling pulse. A Hodgkin–Huxley-type plant AP model (Ca²⁺→Cl⁻→K⁺, no Na⁺), passed through the recording band-pass, reproduces the recorded Venus waveform and fires all-or-none — a concrete active model for the AP-type recordings.")]));
 kids.push(...figure("cable_vs_fhn_sim.png", "Passive cable (decays and broadens with distance) vs FitzHugh–Nagumo active wave (constant amplitude and velocity)."));
-kids.push(p([b("A biophysical Venus-flytrap AP model. "), t("A Hodgkin-Huxley-type plant AP (cvplants.simulate.plant_ap_hh) uses the established plant ionic mechanism: a stimulus admits Ca²⁺; Ca²⁺ gates a depolarising anion (Cl⁻) efflux; the depolarisation opens voltage-gated Ca²⁺ (positive feedback → an all-or-none spike); voltage-gated K⁺ and Ca²⁺ removal repolarise. Plants use Cl⁻/K⁺, "), b("not"), t(" Na⁺, and the AP lasts ~1–2 s. Passed through the recording band-pass, the model AP reproduces the biphasic waveform recorded from Venus flytrap (right panel), and it fires all-or-none. Parameters are illustrative (Hedrich & Neher 2018 / Sukhov-Vodeneev framework), not fitted conductances — surface, band-passed recordings cannot constrain those.")]));
-kids.push(...figure("venus_ap_model.png", "HH-type plant AP model (Ca²⁺→Cl⁻→K⁺). Left: membrane potential and Ca²⁺. Middle: all-or-none (fixed-size spike only above threshold). Right: the model AP, band-passed like the recordings, matches a real Venus AP."));
+kids.push(...figure("venus_ap_model.png", "HH-type plant AP model (Ca²⁺→Cl⁻→K⁺). Left: V and Ca²⁺. Middle: all-or-none. Right: the band-passed model AP matches a real Venus AP."));
+kids.push(p([b("The prediction. "), t("Combining the amplitude-independent handles (dispersion, peak−onset asymmetry, waveform fidelity) into a single score classifies each species as active-leaning, passive-leaning or ambiguous. Venus flytrap and Sensitive Mimosa — the known action-potential plants — come out active-leaning, validating the score; Ornamental Chile and most mints are passive-leaning; the rest are intermediate. This is our prediction for the untested species, to be confirmed by the experiments in Section 9.")]));
+kids.push(...figure("predicted_propagation_mode.png", "Predicted propagation mode per species (passiveness score = dispersion + peak−onset asymmetry − waveform fidelity, z-scored). Green = active-leaning, red = passive-leaning; the known AP plants (Venus, Mimosa) score most active."));
+kids.push(...figure("venus_electrode_asymmetry.png", "Control: Venus’s far/near amplitude ratio is scattered and often > 1 (asymmetric electrodes), unlike the consistent decrement of symmetric-electrode plants — why amplitude is not used above."));
 
-// -------- 10. Ion channels
+// ============ PART 5 ============
+kids.push(pageBreak());
+kids.push(h1("Grouping by all parameters: is propagation phylogenetically structured?"));
+kids.push(p([t("Finally we group species using every parameter found along the way — CV, attenuation, broadening, waveform fidelity, dispersion σ, and AP-like fraction. If signal transmission were phylogenetically constrained, congeners and same-family species would cluster. They do "), b("not"), t(".")]));
+kids.push(...figure("parameter_clustermap.png", "Species clustered by all propagation parameters (label colour = family). Families are scattered across the tree — no phylogenetic structure. Venus flytrap and Sensitive Mimosa cluster as the active pair."));
+kids.push(p([b("Solanaceae are not internally more similar. "), t("A Mantel test between functional distance and taxonomic distance is null (r = −0.02, p = 0.50). Breaking it down by family: Lamiaceae (5 species) are marginally more similar within (mean within-distance 2.35 vs 2.89 to others), but "), b("Solanaceae (3 species) are not"), t(" — the two Capsicum chiles and Tomato are more different from each other (3.72) than from species in other families (3.00). Congeners diverge as much as unrelated species. The propagation profile reflects the biophysics of each conduction event and the signal type, not the species’ ancestry.")]));
+
+// -------- Ion channels
 kids.push(pageBreak());
 kids.push(h1("Ion channels and molecular basis (context)"));
-kids.push(p([t("Plant excitation is Ca²⁺/Cl⁻/K⁺-based, "), b("not"), t(" Na⁺-based as in animal axons (Fromm & Lautner 2007; Sukhov & Vodeneev 2009).")]));
-kids.push(bullet("Depolarisation — Ca²⁺ influx via GLUTAMATE-RECEPTOR-LIKE channels (clade-3 GLR3.3 / GLR3.6) (Mousavi et al. 2013; Toyota et al. 2018; Nguyen et al. 2018)."));
-kids.push(bullet("Sustained depolarisation — anion (Cl⁻) efflux via SLAC1/SLAH3 and QUAC1/ALMT12 (established in guard cells)."));
-kids.push(bullet("Repolarisation — K⁺ efflux via the outward rectifier GORK (Salvador-Recatalà 2018); resting potential set by the P-type H⁺-ATPase (AHA)."));
-kids.push(bullet("Variation potential — transient H⁺-ATPase inactivation behind a xylem “Ricca factor” wave (Vodeneev/Sukhov; Evans et al. 2017)."));
-kids.push(bullet("Venus flytrap — trigger-hair mechanosensing → all-or-none Ca²⁺ AP; AP “counting” gates jasmonate signalling (Böhm et al. 2016; Hedrich & Neher 2018). Mimosa pudica — touch → Ca²⁺ → Cl⁻/K⁺ + water efflux collapses pulvinar turgor (Allen 1969)."));
+kids.push(p([t("Plant excitation is Ca²⁺/Cl⁻/K⁺-based, "), b("not"), t(" Na⁺-based (Fromm & Lautner 2007; Sukhov & Vodeneev 2009).")]));
+kids.push(bullet("Depolarisation — Ca²⁺ influx via GLUTAMATE-RECEPTOR-LIKE channels (GLR3.3 / GLR3.6) (Mousavi 2013; Toyota 2018; Nguyen 2018)."));
+kids.push(bullet("Sustained depolarisation — anion (Cl⁻) efflux via SLAC1/SLAH3 and QUAC1/ALMT12."));
+kids.push(bullet("Repolarisation — K⁺ efflux via GORK (Salvador-Recatalà 2018); resting potential set by the P-type H⁺-ATPase (AHA)."));
+kids.push(bullet("Variation potential — transient H⁺-ATPase inactivation behind a xylem “Ricca factor” wave (Evans 2017)."));
+kids.push(bullet("Venus flytrap — trigger-hair mechanosensing → all-or-none Ca²⁺ AP; AP counting gates jasmonate signalling (Böhm 2016; Hedrich & Neher 2018). Mimosa pudica — Ca²⁺-mediated Cl⁻/K⁺ efflux collapses pulvinar turgor; fires both APs and VPs (Volkov 2010)."));
 
-// -------- 11. New experiments
+// -------- Limitations / new experiments
 kids.push(h1("What this dataset cannot decide — and the minimal new experiment"));
 kids.push(table(
   ["Open question", "Minimal new experiment"],
   [
-    ["True all-or-none threshold", "Stimulus-intensity ladder at one site: step response (active) vs graded (passive)"],
-    ["Refractory period", "Paired-pulse Δt = 0.5–20 min: is the second response abolished/reduced?"],
+    ["True all-or-none threshold", "Stimulus-intensity ladder: step response (active) vs graded (passive)"],
+    ["Refractory period", "Paired-pulse Δt = 0.5–20 min: is the second response abolished?"],
     ["Regenerative ion mechanism", "Pharmacology (La³⁺/Gd³⁺, A-9-C/DIDS, TEA) between wound and electrodes"],
     ["Channel-gated vs physical conduction", "Q10 series (15/25/35 °C): active ≈ 2–3, passive ≈ 1"],
-    ["Hydraulic vs electrical primacy", "Co-record xylem pressure / stem strain with the electrodes"],
-    ["Clean delays for fast species", "Bipolar (differential) recording to cancel the shared-reference common mode"],
+    ["Unresolvable fast delays (Mimosa AP)", "Wider electrode spacing so the small AP delay clears the timing floor"],
+    ["Clean delays for the fast species", "Bipolar (differential) recording to cancel the shared-reference common mode"],
   ],
   [3200, 6160]));
 
-// -------- 12. Figure guidance
+// -------- Figure guidance
 kids.push(h1("Figure selection guidance for the manuscript"));
-kids.push(p([b("Manuscript candidates (the core story): "), t("conduction velocity by species (Fig. 1); validation vs the manual analysis (Fig. 2); the near→far transformation, self-aligned and normalised to show the amplitude drop (Fig. 6); no phylogenetic signal (Fig. 9); the optimised active-vs-passive model comparison (Fig. 12); the two-potential-type classification (Fig. 14); the passive-vs-active simulation concept (Fig. 16); and the biophysical Venus AP model (Fig. 17).")]));
-kids.push(p([b("Supporting / diagnostic (methods, reviewer questions, or the repository): "), t("the per-recording delay validation and the estimator bakeoff (Figs. 3–4, explaining the Mimosa case); the shared-reference raw traces (Fig. 5); the pooled transformation metrics and attenuation–broadening co-variation (Figs. 7–8); the amplitude-independent active/passive discriminators (Figs. 10–11), the example model fits (Fig. 13), and the Venus electrode-asymmetry control (Fig. 15).")]));
-kids.push(p([it("Deliberately removed from an earlier draft: a Cannabis-only distance–delay scatter (unclear); a near-aligned overlay that smeared the far channel (superseded by Fig. 6); and an earlier, unfair model-fit figure — a gain-vs-dispersion “space” and a naïve R² comparison where the active model had an unfair extra parameter and the near/far label was mis-ordered for the fast species. These are replaced by the optimised, corrected comparison in Figs. 12–13 (waveform vs amplitude fit, near/far taken on an AP-preserving filter).")]));
+kids.push(p([b("Manuscript candidates (one per step of the argument): "), t("CV by species (Fig. 1); validation vs the manual analysis (Fig. 2); the two potential types (Fig. 5); the near→far transformation (Fig. 7); the active-vs-passive model comparison (Fig. 10) with the predicted propagation mode (Fig. 16); the biophysical Venus AP model (Fig. 15); and the all-parameter clustering / phylogeny result (Fig. 18).")]));
+kids.push(p([b("Supporting / diagnostic: "), t("delay validation and estimator bakeoff (Figs. 3–4); shared-reference raw traces (Fig. 6); pooled transformation and attenuation–broadening (Figs. 8–9); example model fits and the amplitude-independent discriminators (Figs. 11–13); the passive-vs-active simulation concept (Fig. 14); and the Venus electrode-asymmetry control (Fig. 17).")]));
+kids.push(p([it("Removed in revision: the amplitude (gain = 1) model fit (uninterpretable — confounded by electrode coupling); a Cannabis-only distance–delay scatter; near-aligned overlays that smeared the far channel; and the gain-vs-dispersion “space”. Superseded by the corrected, optimised comparisons here.")]));
 
-// -------- 13. References
+// -------- References
 kids.push(pageBreak());
 kids.push(h1("Key references"));
 const refs = [
   "Contreras C, Morales M, Rojas P, Serbe-Kamp E, Marzullo T. Electrical Conduction Velocity Across Species of Rapid Movement and Non-Rapid Movement Plants. Plant Signaling & Behavior (the manual analysis compared here).",
+  "Madariaga D, et al. (2024). A library of electrophysiological responses in plants — open-science model. Plant Signaling & Behavior 19(1):2310977 (the base pipeline).",
+  "Volkov AG, et al. (2010). Signal transduction in Mimosa pudica: biologically closed electrical circuits. Plant, Cell & Environment 33:816–827.",
   "Fromm J, Lautner S (2007). Electrical signals and their physiological significance in plants. Plant, Cell & Environment 30:249–257.",
   "Mousavi SAR, et al. (2013). GLUTAMATE RECEPTOR-LIKE genes mediate leaf-to-leaf wound signalling. Nature 500:422–426.",
   "Toyota M, et al. (2018). Glutamate triggers long-distance, calcium-based plant defense signaling. Science 361:1112–1115.",
-  "Nguyen CT, et al. (2018). Identification of cell populations necessary for leaf-to-leaf electrical signaling. PNAS 115:10178–10183.",
-  "Salvador-Recatalà V (2018). The AKT2/GORK potassium channels shape the plant action potential. Int. J. Mol. Sci. 19:926.",
+  "Nguyen CT, et al. (2018). Cell populations necessary for leaf-to-leaf electrical signaling. PNAS 115:10178–10183.",
   "Böhm J, et al. (2016). The Venus flytrap counts prey-induced action potentials to induce sodium uptake. Current Biology 26:286–295.",
   "Hedrich R, Neher E (2018). Venus flytrap: how an excitable, carnivorous plant works. Trends in Plant Science 23:220–234.",
-  "Allen RD (1969). Mechanism of the seismonastic reaction in Mimosa pudica. Plant Physiology 44:1101–1107.",
-  "Vodeneev V, Akinchits E, Sukhov V (2015). Variation potential in higher plants. Plant Signaling & Behavior 10:e1057365.",
   "Evans MJ, et al. (2017). A chemical agent transported by xylem mass flow propagates variation potentials. The Plant Journal 91:1029–1037.",
   "Sukhov V, Vodeneev V (2009). A mathematical model of action potential in cells of vascular plants. J. Membrane Biology 232:59–67.",
-  "Sukhov V, et al. (2011). Simulation of action potential propagation in plants. J. Theoretical Biology 291:47–55.",
   "FitzHugh R (1961). Impulses and physiological states in theoretical models of nerve membrane. Biophysical Journal 1:445–466.",
 ];
 refs.forEach((r) => kids.push(new Paragraph({ numbering: { reference: "refs", level: 0 }, spacing: { after: 80 },
@@ -209,14 +201,13 @@ const doc = new Document({
 Packer.toBuffer(doc).then((buf) => {
   const primary = path.join(ROOT, "results", "Plant_conduction_velocity_report.docx");
   let out = primary;
-  try {
-    fs.writeFileSync(out, buf);
-  } catch (e) {
+  try { fs.writeFileSync(out, buf); }
+  catch (e) {
     if (e.code === "EBUSY" || e.code === "EPERM") {
       out = path.join(ROOT, "results", "Plant_conduction_velocity_report_revised.docx");
       fs.writeFileSync(out, buf);
-      console.log("(primary file was open/locked; wrote revised copy instead)");
-    } else { throw e; }
+      console.log("(primary open/locked; wrote revised copy)");
+    } else throw e;
   }
   console.log("wrote", out, "-", FIGN, "figures,", SECN, "sections");
 });

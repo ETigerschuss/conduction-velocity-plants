@@ -89,7 +89,7 @@
  ],
  "model_comparison_bars.png": [
   1560,
-  1200
+  660
  ],
  "model_fit_examples.png": [
   1320,
@@ -103,6 +103,10 @@
   1680,
   516
  ],
+ "parameter_clustermap.png": [
+  1560,
+  780
+ ],
  "peak_onset_asymmetry.png": [
   1440,
   660
@@ -110,6 +114,10 @@
  "potential_types.png": [
   1800,
   552
+ ],
+ "predicted_propagation_mode.png": [
+  1320,
+  600
  ],
  "self_aligned_channels.png": [
   1800,
@@ -134,9 +142,5 @@
  "venus_electrode_asymmetry.png": [
   1320,
   660
- ],
- "_mimosa_types.png": [
-  1280,
-  1440
  ]
 }
