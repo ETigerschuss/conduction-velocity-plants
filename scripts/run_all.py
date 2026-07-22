@@ -14,7 +14,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from cvplants.io import iter_dataset            # noqa: E402
-from cvplants.batch import build_results, species_summary  # noqa: E402
+from cvplants.batch import build_results, species_summary, augment_cv  # noqa: E402
 from cvplants import viz                        # noqa: E402
 
 
@@ -32,6 +32,7 @@ def main():
 
     print(f"[1/4] analysing recordings under {args.data} ...")
     df = build_results(args.data, cutoff=args.cutoff)
+    df = augment_cv(df, root)   # add cv_manual + cv_2tap columns when available
     df.to_csv(os.path.join(args.out, "recordings.csv"), index=False)
     n_valid = int((df["valid"] == True).sum())  # noqa: E712
     print(f"      {len(df)} recordings, {n_valid} valid for delay/CV")

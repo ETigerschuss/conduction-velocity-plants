@@ -95,6 +95,13 @@ Median CV (resolved-delay recordings), slowest to fastest:
 | Marijuana | 5.8 | | Chilean Chile | 13.6 |
 | | | | **Venus flytrap** | **28.1** |
 
+The pipeline reports three CV columns per recording (`recordings.csv`):
+`cv_xcorr_mm_s` (default cross-correlation), `cv_2tap` (common-mode-robust 2-tap
+delay), and `cv_manual` (distance ÷ the experimenters' own spreadsheet delay).
+They agree for every species except Mimosa's fast July batch; `cv_manual`
+reproduces the paper exactly (Mimosa 30.6, Venus 35.7 mm/s) and is the column to
+use when matching the manuscript numbers.
+
 A forward-simulation check (`scripts/sim_vs_real.py`): predicting the far trace
 from the near trace, the **active model (delayed copy + shared component)
 out-predicts the passive cable** for almost every species (median R² 0.4–0.87 vs
