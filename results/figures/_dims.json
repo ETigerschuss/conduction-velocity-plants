@@ -107,6 +107,10 @@
   1440,
   660
  ],
+ "potential_types.png": [
+  1800,
+  552
+ ],
  "self_aligned_channels.png": [
   1800,
   1800
@@ -131,8 +135,8 @@
   1320,
   660
  ],
- "_venus_swap_check.png": [
-  1100,
-  400
+ "_mimosa_types.png": [
+  1280,
+  1440
  ]
 }
