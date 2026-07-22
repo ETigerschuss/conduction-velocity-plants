@@ -31,13 +31,24 @@ FIG = os.path.join(ROOT, "results", "figures")
 C0, C1 = "#1f77b4", "#d62728"
 
 
+def _type_lookup():
+    f = os.path.join(ROOT, "results", "potential_types.csv")
+    if not os.path.exists(f):
+        return {}
+    d = pd.read_csv(f)
+    return {(r.species, r.recording): r.potential_type for r in d.itertuples()}
+
+
 def channel_segments(pre=3.0, post=6.0, target_fs=50.0, cutoff=2.0):
     grid = np.arange(-pre, post, 1.0 / target_fs)
-    per = {}          # species -> ([ch0 self-aligned], [ch1 self-aligned])
+    per = {}          # species -> ([near self-aligned], [far self-aligned])
+    ptypes = {}       # species -> [AP-like / VP-like per recording]
     base_r = {}       # species -> [pre-stim zero-lag r]
+    tlook = _type_lookup()
     for rec in iter_dataset(os.path.join(ROOT, "data")):
         if rec.n_channels < 2:
             continue
+        ptypes.setdefault(rec.species, []).append(tlook.get((rec.species, rec.name), "AP-like"))
         fs = rec.fs
         stim = rec.stim_start if rec.stim_start is not None else 1.0
         bl = (max(0.0, stim - pre), stim)
@@ -73,12 +84,13 @@ def channel_segments(pre=3.0, post=6.0, target_fs=50.0, cutoff=2.0):
         if bi1 - bi0 > 10:
             a, b = c0[bi0:bi1], c1[bi0:bi1]
             base_r.setdefault(rec.species, []).append(float(np.corrcoef(a, b)[0, 1]))
-    return grid, per, base_r
+    return grid, per, base_r, ptypes
 
 
 def main():
     df = pd.read_csv(os.path.join(ROOT, "results", "recordings.csv"))
-    grid, per, base_r = channel_segments()
+    grid, per, base_r, ptypes = channel_segments()
+    AP_C, VP_C = "#2a9d2a", "#b060c0"   # thin-trace colour by potential type
     v = df[df["valid"] == True].copy()  # noqa: E712
     v["asym"] = v["peak_delay_s"] - v["onset_delay_s"]
     order = [s for s in v.groupby("species")["asym"].median().sort_values().index if s in per]
@@ -90,9 +102,11 @@ def main():
     axes = np.atleast_1d(axes).ravel()
     for ax, sp in zip(axes, order):
         A0 = np.array(per[sp][0]); A1 = np.array(per[sp][1])
+        types = ptypes.get(sp, ["AP-like"] * len(A0))
         for M, xoff, c, lab in [(A0, 0.0, C0, "near"), (A1, gap, C1, "far")]:
-            for row in M:
-                ax.plot(grid + xoff, np.clip(row, -0.7, 1.5), color=c, lw=0.3, alpha=0.18)
+            for row, ty in zip(M, types):    # thin traces coloured by potential type
+                tc = AP_C if ty == "AP-like" else VP_C
+                ax.plot(grid + xoff, np.clip(row, -0.7, 1.5), color=tc, lw=0.35, alpha=0.35)
             # median + IQR band: robust to the few far>>near electrode-coupling outliers
             med = np.nanmedian(M, axis=0)
             q1 = np.nanpercentile(M, 25, axis=0); q3 = np.nanpercentile(M, 75, axis=0)
@@ -107,10 +121,16 @@ def main():
         ax.legend(fontsize=7, loc="upper right")
     for j in range(len(order), len(axes)):
         axes[j].axis("off")
+    from matplotlib.lines import Line2D
+    axes[0].legend(handles=[Line2D([0], [0], color=AP_C, lw=2, label="AP-like recording"),
+                            Line2D([0], [0], color=VP_C, lw=2, label="VP-like recording"),
+                            Line2D([0], [0], color=C0, lw=2.3, label="near median"),
+                            Line2D([0], [0], color=C1, lw=2.3, label="far median")],
+                   fontsize=7, loc="upper left")
     fig.suptitle("Near vs far response, each self-aligned on its own peak (arbitrary gap between them),\n"
-                 "BOTH normalised to the NEAR peak so the far amplitude drop is visible. "
-                 "thin = recordings (clipped), thick = median, band = IQR.",
-                 fontsize=12)
+                 "both normalised to the NEAR peak (far amplitude drop visible). Thin traces coloured by "
+                 "potential type (AP-like green / VP-like purple); thick = near/far median, band = IQR.",
+                 fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     out = os.path.join(FIG, "self_aligned_channels.png")
     fig.savefig(out, dpi=120); plt.close(fig)
