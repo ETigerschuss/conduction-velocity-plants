@@ -12,3 +12,6 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Unpublished manuscript / figures (do not publish)
+*.pdf
