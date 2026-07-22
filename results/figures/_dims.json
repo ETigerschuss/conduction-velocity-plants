@@ -87,6 +87,14 @@
   1200,
   900
  ],
+ "model_comparison_bars.png": [
+  1560,
+  1200
+ ],
+ "model_fit_examples.png": [
+  1320,
+  1560
+ ],
  "near_to_far_by_species.png": [
   1440,
   1620
@@ -122,5 +130,9 @@
  "venus_electrode_asymmetry.png": [
   1320,
   660
+ ],
+ "_venus_swap_check.png": [
+  1100,
+  400
  ]
 }
