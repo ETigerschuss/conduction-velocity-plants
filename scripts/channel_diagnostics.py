@@ -49,16 +49,26 @@ def channel_segments(pre=3.0, post=6.0, target_fs=50.0, cutoff=2.0):
         seg0, seg1 = c0[i0:i1:step], c1[i0:i1:step]
         fse = fs / step
         per.setdefault(rec.species, ([], []))
-        for k, seg in enumerate((seg0, seg1)):
-            if len(seg) < int(fse):
-                per[rec.species][k].append(np.full_like(grid, np.nan))
-                continue
+        if len(seg0) < int(fse) or len(seg1) < int(fse):
+            per[rec.species][0].append(np.full_like(grid, np.nan))
+            per[rec.species][1].append(np.full_like(grid, np.nan))
+            continue
+        # sign-correct each channel and find its own peak
+        info = []
+        for seg in (seg0, seg1):
             sign = np.sign(seg[np.argmax(np.abs(seg))]) or 1.0
             s = seg * sign
             pk = int(np.argmax(s))
-            amp = s[pk] if s[pk] != 0 else 1.0
+            info.append((s, pk, s[pk] if s[pk] != 0 else 1.0))
+        # near = earlier-peaking channel; normalise BOTH by the NEAR peak so the
+        # far channel's amplitude drop (attenuation) is visible, then align each
+        # channel on its own peak in time.
+        near_i = 0 if info[0][1] <= info[1][1] else 1
+        near_amp = info[near_i][2]
+        for role, ci in enumerate((near_i, 1 - near_i)):   # 0 = near, 1 = far
+            s, pk, _ = info[ci]
             tt = (np.arange(len(s)) - pk) / fse
-            per[rec.species][k].append(np.interp(grid, tt, s / amp, left=np.nan, right=np.nan))
+            per[rec.species][role].append(np.interp(grid, tt, s / near_amp, left=np.nan, right=np.nan))
         bi0, bi1 = int(bl[0] * fs), int(bl[1] * fs)
         if bi1 - bi0 > 10:
             a, b = c0[bi0:bi1], c1[bi0:bi1]
@@ -80,22 +90,27 @@ def main():
     axes = np.atleast_1d(axes).ravel()
     for ax, sp in zip(axes, order):
         A0 = np.array(per[sp][0]); A1 = np.array(per[sp][1])
-        for M, xoff, c, lab in [(A0, 0.0, C0, "ch0"), (A1, gap, C1, "ch1")]:
+        for M, xoff, c, lab in [(A0, 0.0, C0, "near"), (A1, gap, C1, "far")]:
             for row in M:
-                ax.plot(grid + xoff, row, color=c, lw=0.3, alpha=0.22)
-            mean = np.nanmean(M, axis=0); sd = np.nanstd(M, axis=0)
-            ax.fill_between(grid + xoff, mean - sd, mean + sd, color=c, alpha=0.22, lw=0)
-            ax.plot(grid + xoff, mean, color=c, lw=2.3, label=lab)
+                ax.plot(grid + xoff, np.clip(row, -0.7, 1.5), color=c, lw=0.3, alpha=0.18)
+            # median + IQR band: robust to the few far>>near electrode-coupling outliers
+            med = np.nanmedian(M, axis=0)
+            q1 = np.nanpercentile(M, 25, axis=0); q3 = np.nanpercentile(M, 75, axis=0)
+            ax.fill_between(grid + xoff, q1, q3, color=c, alpha=0.25, lw=0)
+            ax.plot(grid + xoff, med, color=c, lw=2.3, label=lab)
         br = np.nanmedian(base_r.get(sp, [np.nan]))
-        ax.set_title(f"{sp}  (baseline r={br:+.2f})", fontsize=9)
+        att = np.nanmedian(np.nanmax(A1, axis=1)) if len(A1) else np.nan
+        ax.set_title(f"{sp}  (far/near ≈ {att:.2f})", fontsize=9)
         ax.axvline(0, color=C0, ls=":", lw=0.6); ax.axvline(gap, color=C1, ls=":", lw=0.6)
-        ax.set_ylim(-0.9, 1.25)
+        ax.axhline(1.0, color="#888", ls="--", lw=0.6); ax.axhline(0, color="#888", lw=0.5)
+        ax.set_ylim(-0.7, 1.5)
         ax.legend(fontsize=7, loc="upper right")
     for j in range(len(order), len(axes)):
         axes[j].axis("off")
-    fig.suptitle("Each channel self-aligned on its OWN peak (arbitrary gap between them)\n"
-                 "thin = recordings, thick = mean ± SD; baseline r = pre-stim common-mode coupling",
-                 fontsize=13)
+    fig.suptitle("Near vs far response, each self-aligned on its own peak (arbitrary gap between them),\n"
+                 "BOTH normalised to the NEAR peak so the far amplitude drop is visible. "
+                 "thin = recordings (clipped), thick = median, band = IQR.",
+                 fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     out = os.path.join(FIG, "self_aligned_channels.png")
     fig.savefig(out, dpi=120); plt.close(fig)
