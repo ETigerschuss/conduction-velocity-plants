@@ -12,6 +12,10 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+~$*.docx
+
+# Word fallback copy (regenerate primary from scripts/build_report_docx.js)
+*_revised.docx
 
 # Unpublished manuscript / figures (do not publish)
 *.pdf

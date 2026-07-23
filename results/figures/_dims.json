@@ -11,6 +11,14 @@
   900,
   720
  ],
+ "attenuation_vs_broadening_AP.png": [
+  900,
+  720
+ ],
+ "attenuation_vs_broadening_VP.png": [
+  900,
+  720
+ ],
  "baseline_common_mode.png": [
   1320,
   600
@@ -63,6 +71,14 @@
   900,
   720
  ],
+ "delay_vs_distance_AP.png": [
+  900,
+  720
+ ],
+ "delay_vs_distance_VP.png": [
+  900,
+  720
+ ],
  "functional_dendrogram.png": [
   1320,
   660
@@ -91,6 +107,14 @@
   1560,
   660
  ],
+ "model_comparison_bars_AP.png": [
+  1560,
+  660
+ ],
+ "model_comparison_bars_VP.png": [
+  1560,
+  660
+ ],
  "model_fit_examples.png": [
   1320,
   1560
@@ -103,11 +127,35 @@
   1680,
   516
  ],
+ "near_to_far_transformation_AP.png": [
+  1680,
+  516
+ ],
+ "near_to_far_transformation_VP.png": [
+  1680,
+  516
+ ],
  "parameter_clustermap.png": [
   1560,
   780
  ],
+ "parameter_clustermap_AP.png": [
+  1560,
+  780
+ ],
+ "parameter_clustermap_VP.png": [
+  1560,
+  780
+ ],
  "peak_onset_asymmetry.png": [
+  1440,
+  660
+ ],
+ "peak_onset_asymmetry_AP.png": [
+  1440,
+  660
+ ],
+ "peak_onset_asymmetry_VP.png": [
   1440,
   660
  ],
@@ -119,7 +167,23 @@
   1320,
   600
  ],
+ "predicted_propagation_mode_AP.png": [
+  1320,
+  600
+ ],
+ "predicted_propagation_mode_VP.png": [
+  1320,
+  600
+ ],
  "self_aligned_channels.png": [
+  1800,
+  1800
+ ],
+ "self_aligned_channels_AP.png": [
+  1800,
+  1800
+ ],
+ "self_aligned_channels_VP.png": [
   1800,
   1800
  ],
@@ -144,6 +208,14 @@
   540
  ],
  "venus_electrode_asymmetry.png": [
+  1320,
+  660
+ ],
+ "venus_electrode_asymmetry_AP.png": [
+  1320,
+  660
+ ],
+ "venus_electrode_asymmetry_VP.png": [
   1320,
   660
  ]

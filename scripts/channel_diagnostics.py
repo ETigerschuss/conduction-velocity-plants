@@ -39,7 +39,7 @@ def _type_lookup():
     return {(r.species, r.recording): r.potential_type for r in d.itertuples()}
 
 
-def channel_segments(pre=3.0, post=6.0, target_fs=50.0, cutoff=2.0):
+def channel_segments(pre=3.0, post=6.0, target_fs=50.0, cutoff=2.0, only_type=None):
     grid = np.arange(-pre, post, 1.0 / target_fs)
     per = {}          # species -> ([near self-aligned], [far self-aligned])
     ptypes = {}       # species -> [AP-like / VP-like per recording]
@@ -48,7 +48,10 @@ def channel_segments(pre=3.0, post=6.0, target_fs=50.0, cutoff=2.0):
     for rec in iter_dataset(os.path.join(ROOT, "data")):
         if rec.n_channels < 2:
             continue
-        ptypes.setdefault(rec.species, []).append(tlook.get((rec.species, rec.name), "AP-like"))
+        ty = tlook.get((rec.species, rec.name), "AP-like")
+        if only_type is not None and ty != only_type:
+            continue
+        ptypes.setdefault(rec.species, []).append(ty)
         fs = rec.fs
         stim = rec.stim_start if rec.stim_start is not None else 1.0
         bl = (max(0.0, stim - pre), stim)
@@ -87,14 +90,11 @@ def channel_segments(pre=3.0, post=6.0, target_fs=50.0, cutoff=2.0):
     return grid, per, base_r, ptypes
 
 
-def main():
-    df = pd.read_csv(os.path.join(ROOT, "results", "recordings.csv"))
-    grid, per, base_r, ptypes = channel_segments()
-    AP_C, VP_C = "#2a9d2a", "#b060c0"   # thin-trace colour by potential type
-    v = df[df["valid"] == True].copy()  # noqa: E712
-    v["asym"] = v["peak_delay_s"] - v["onset_delay_s"]
-    order = [s for s in v.groupby("species")["asym"].median().sort_values().index if s in per]
+AP_C, VP_C = "#2a9d2a", "#b060c0"   # thin-trace colour by potential type
 
+
+def render_matrix(grid, per, base_r, ptypes, order, out, extra=""):
+    order = [s for s in order if s in per and len(per[s][0])]
     gap = (grid[-1] - grid[0]) + 2.0
     ncol = 3
     nrow = int(np.ceil(len(order) / ncol))
@@ -129,12 +129,25 @@ def main():
                    fontsize=7, loc="upper left")
     fig.suptitle("Near vs far response, each self-aligned on its own peak (arbitrary gap between them),\n"
                  "both normalised to the NEAR peak (far amplitude drop visible). Thin traces coloured by "
-                 "potential type (AP-like green / VP-like purple); thick = near/far median, band = IQR.",
-                 fontsize=11)
+                 "potential type (AP-like green / VP-like purple); thick = near/far median, band = IQR. "
+                 + extra, fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
-    out = os.path.join(FIG, "self_aligned_channels.png")
     fig.savefig(out, dpi=120); plt.close(fig)
     print("wrote", out)
+
+
+def main():
+    df = pd.read_csv(os.path.join(ROOT, "results", "recordings.csv"))
+    v = df[df["valid"] == True].copy()  # noqa: E712
+    v["asym"] = v["peak_delay_s"] - v["onset_delay_s"]
+    order = v.groupby("species")["asym"].median().sort_values().index.tolist()
+
+    grid, per, base_r, ptypes = channel_segments()
+    render_matrix(grid, per, base_r, ptypes, order, os.path.join(FIG, "self_aligned_channels.png"))
+    for ty, suf in [("AP-like", "_AP"), ("VP-like", "_VP")]:
+        g2, p2, b2, t2 = channel_segments(only_type=ty)
+        render_matrix(g2, p2, b2, t2, order, os.path.join(FIG, f"self_aligned_channels{suf}.png"),
+                      extra=f"— {ty.replace('-like', '')} recordings only.")
 
     # common-mode summary figure: baseline r per species
     fig2, ax = plt.subplots(figsize=(11, 5))

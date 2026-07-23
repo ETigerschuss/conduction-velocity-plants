@@ -71,7 +71,7 @@ def parameter_clustermap(g, out):
     """Species × parameter heatmap, clustered; row labels coloured by family.
     Tests whether species group by their functional parameters — and by family."""
     cols = ["CV", "attenuation", "broadening", "waveform_sim", "dispersion", "AP_fraction"]
-    Z = (g[cols] - g[cols].mean()) / g[cols].std()
+    Z = (g[cols] - g[cols].mean()) / g[cols].std().replace(0, 1)
     link = linkage(Z.values, method="average", metric="euclidean")
     order = dendrogram(link, no_plot=True, labels=list(Z.index))["ivl"]
     Zo = Z.loc[order]
@@ -97,7 +97,7 @@ def parameter_clustermap(g, out):
 
 def family_similarity(g):
     cols = ["CV", "attenuation", "broadening", "waveform_sim", "dispersion"]
-    Z = (g[cols] - g[cols].mean()) / g[cols].std()
+    Z = (g[cols] - g[cols].mean()) / g[cols].std().replace(0, 1)
     D = pd.DataFrame(squareform(pdist(Z.values)), index=g.index, columns=g.index)
     out = {}
     for fam in sorted(set(g["family"])):
