@@ -122,14 +122,14 @@ def render_matrix(grid, per, base_r, ptypes, order, out, extra=""):
     for j in range(len(order), len(axes)):
         axes[j].axis("off")
     from matplotlib.lines import Line2D
-    axes[0].legend(handles=[Line2D([0], [0], color=AP_C, lw=2, label="AP-like recording"),
-                            Line2D([0], [0], color=VP_C, lw=2, label="VP-like recording"),
+    axes[0].legend(handles=[Line2D([0], [0], color=AP_C, lw=2, label="short-duration (< 2 s)"),
+                            Line2D([0], [0], color=VP_C, lw=2, label="long-duration (> 2 s)"),
                             Line2D([0], [0], color=C0, lw=2.3, label="near median"),
                             Line2D([0], [0], color=C1, lw=2.3, label="far median")],
                    fontsize=7, loc="upper left")
     fig.suptitle("Near vs far response, each self-aligned on its own peak (arbitrary gap between them),\n"
                  "both normalised to the NEAR peak (far amplitude drop visible). Thin traces coloured by "
-                 "potential type (AP-like green / VP-like purple); thick = near/far median, band = IQR. "
+                 "waveform duration (short green / long purple); thick = near/far median, band = IQR. "
                  + extra, fontsize=11)
     fig.tight_layout(rect=(0, 0, 1, 0.97))
     fig.savefig(out, dpi=120); plt.close(fig)
@@ -146,8 +146,9 @@ def main():
     render_matrix(grid, per, base_r, ptypes, order, os.path.join(FIG, "self_aligned_channels.png"))
     for ty, suf in [("AP-like", "_AP"), ("VP-like", "_VP")]:
         g2, p2, b2, t2 = channel_segments(only_type=ty)
+        label = "short-duration (< 2 s)" if ty == "AP-like" else "long-duration (> 2 s)"
         render_matrix(g2, p2, b2, t2, order, os.path.join(FIG, f"self_aligned_channels{suf}.png"),
-                      extra=f"— {ty.replace('-like', '')} recordings only.")
+                      extra=f"— {label} recordings only.")
 
     # common-mode summary figure: baseline r per species
     fig2, ax = plt.subplots(figsize=(11, 5))

@@ -1,13 +1,19 @@
-"""Two potential types → two mechanisms? Treat AP-like and VP-like recordings as
-separate populations and ask whether they propagate differently.
+"""The fast<->slow WAVEFORM axis: split recordings by dominant-event duration and
+ask whether the two groups propagate differently.
 
-Caveats made explicit:
-  * The type is INFERRED from each recording's waveform (dominant-event duration),
-    not known a priori — and the amplifier's ~0.2 Hz high-pass removes the slow DC
-    that defines a variation potential, so 'duration' is a proxy for AP-vs-VP, not
-    a ground-truth label. We therefore report the AP-like FRACTION per species
-    (no species is assumed to be purely one type) and show the active↔passive
-    character as a CONTINUUM in duration, not a hard dichotomy.
+This is a DESCRIPTIVE waveform axis, NOT an AP/VP classification. Four tests in
+the report (Section 4) show the duration rule does not identify action potentials:
+  * the per-species ordering is biologically inverted (mints/chiles outrank Venus
+    and Mimosa, the only species with established APs);
+  * under a flame (a WOUNDING stimulus, which evokes variation potentials) it
+    still labels 113/166 = 68% of analysed recordings "short/AP-like" — the
+    inverse of the biological prediction;
+  * the ~0.2 Hz hardware high-pass plus the 0.15 Hz analysis filter differentiate
+    away the sustained DC plateau that DEFINES a variation potential, pushing true
+    VPs below the 2 s threshold;
+  * the duration distribution is unimodal on a log scale (Sarle 0.31), and within
+    a movement class the label does not change conduction velocity (p ~ 0.9-1.0).
+Labels below are therefore "short (< 2 s)" / "long (> 2 s)", never AP/VP.
 """
 from __future__ import annotations
 
@@ -46,23 +52,23 @@ def figure(m, out):
     frac = m.groupby("species")["potential_type"].apply(lambda s: (s == "AP-like").mean()).sort_values()
     n = m.groupby("species")["recording"].count()
     y = np.arange(len(frac))
-    ax.barh(y, frac.values, color=AP_C, label="AP-like")
-    ax.barh(y, 1 - frac.values, left=frac.values, color=VP_C, label="VP-like")
+    ax.barh(y, frac.values, color=AP_C, label="short (< 2 s)")
+    ax.barh(y, 1 - frac.values, left=frac.values, color=VP_C, label="long (> 2 s)")
     ax.set_yticks(y); ax.set_yticklabels([f"{s} (n={n[s]})" for s in frac.index], fontsize=7)
-    ax.set_xlabel("fraction of recordings"); ax.set_title("Every species is a MIX of both types\n(fraction inferred per recording)")
+    ax.set_xlabel("fraction of recordings"); ax.set_title("Fraction of SHORT-duration recordings per species\n(ordering does NOT track the known-AP species)", fontsize=10)
     ax.legend(fontsize=8, loc="lower right")
 
     # (B) the active↔passive character as a continuum in duration
     ax = axes[1]
     s = m.dropna(subset=["duration_s", "sigma"])
-    for ty, c in [("AP-like", AP_C), ("VP-like", VP_C)]:
+    for ty, c, lab in [("AP-like", AP_C, "short (< 2 s)"), ("VP-like", VP_C, "long (> 2 s)")]:
         d = s[s.potential_type == ty]
-        ax.scatter(d["duration_s"], d["sigma"], s=16, color=c, alpha=0.6, edgecolor="none", label=ty)
+        ax.scatter(d["duration_s"], d["sigma"], s=16, color=c, alpha=0.6, edgecolor="none", label=lab)
     r, p = spearmanr(s["duration_s"], s["sigma"])
     ax.axvline(2.0, color="#888", ls="--", lw=1)
     ax.set_xscale("log"); ax.set_xlabel("dominant-event duration (s)")
     ax.set_ylabel("passive dispersion σ (s)")
-    ax.set_title(f"Longer signals are more dispersive (passive)\nSpearman ρ={r:.2f}, p={p:.1e} — a continuum, not a switch")
+    ax.set_title(f"Longer signals are more dispersive\nSpearman ρ={r:.2f}, p={p:.1e} — a continuum, not a switch", fontsize=10)
     ax.legend(fontsize=8)
 
     # (C) AP vs VP population, key metrics (z-scored so they share an axis)
@@ -75,16 +81,16 @@ def figure(m, out):
         vp_meds.append(np.nanmedian(z[m.potential_type == "VP-like"]))
         labels.append(lab)
     x = np.arange(len(labels))
-    ax.bar(x - 0.2, ap_meds, 0.38, color=AP_C, label="AP-like")
-    ax.bar(x + 0.2, vp_meds, 0.38, color=VP_C, label="VP-like")
+    ax.bar(x - 0.2, ap_meds, 0.38, color=AP_C, label="short (< 2 s)")
+    ax.bar(x + 0.2, vp_meds, 0.38, color=VP_C, label="long (> 2 s)")
     ax.axhline(0, color="k", lw=0.6)
     ax.set_xticks(x); ax.set_xticklabels(labels, rotation=20, ha="right", fontsize=8)
     ax.set_ylabel("median (z-score)")
-    ax.set_title("AP-like: faster, less dispersion, higher fidelity\n(active-like); VP-like the opposite (passive-like)")
+    ax.set_title("Short: faster, less dispersion, higher fidelity;\nlong the opposite (a waveform trend, not a mechanism)", fontsize=10)
     ax.legend(fontsize=8)
 
-    fig.suptitle("Two potential types as two mechanisms — treated as separate populations "
-                 "(type inferred from the waveform; a proxy, see caveats)", fontsize=12)
+    fig.suptitle("The fast↔slow WAVEFORM axis (duration of the dominant deflection) — "
+                 "a descriptive split, NOT an AP/VP classification (see Section 4)", fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.94)); fig.savefig(out, dpi=120); plt.close(fig)
 
 

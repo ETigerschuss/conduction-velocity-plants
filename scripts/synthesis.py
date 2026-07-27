@@ -44,21 +44,29 @@ def matrix():
 
 
 def active_passive_prediction(g, out):
-    """Passiveness score = z(dispersion) + z(peak_onset) − z(waveform_sim).
-    Low = active-leaning, high = passive-leaning."""
-    z = lambda c: (c - c.mean()) / c.std()
+    """DESCRIPTIVE dispersion profile = z(dispersion) + z(peak_onset) − z(waveform_sim).
+
+    Low = the near->far transformation is closest to rigid translation; high = most
+    dispersive. This is deliberately NOT converted into an active/passive verdict:
+    the model comparison (results/model_comparison.csv) shows a passive model
+    out-fits an active one in 176/176 recordings, INCLUDING Venus flytrap and
+    Mimosa whose action potentials are established -- so this montage cannot
+    adjudicate propagation mode for any species (report Section 6).
+    """
+    z = lambda c: (c - c.mean()) / (c.std() or 1.0)   # scalar std; guard constant columns
     score = (z(g["dispersion"]) + z(g["peak_onset"]) - z(g["waveform_sim"])) / 3.0
     order = score.sort_values().index.tolist()
-    pred = pd.Series(np.where(score < -0.35, "active-leaning",
-                     np.where(score > 0.35, "passive-leaning", "ambiguous")), index=g.index)
-    colmap = {"active-leaning": "#2a7a2a", "passive-leaning": "#b03030", "ambiguous": "#999"}
+    pred = pd.Series(np.where(score < -0.35, "low dispersion",
+                     np.where(score > 0.35, "high dispersion", "intermediate")), index=g.index)
+    colmap = {"low dispersion": "#2a7a2a", "high dispersion": "#b03030", "intermediate": "#999"}
     fig, ax = plt.subplots(figsize=(11, 5))
     ax.bar(range(len(order)), score[order], color=[colmap[pred[s]] for s in order], edgecolor="k", lw=0.4)
     ax.axhline(0, color="k", lw=0.6)
     ax.set_xticks(range(len(order)))
-    ax.set_xticklabels([f"{s}\n(AP {g.loc[s,'AP_fraction']:.0%})" for s in order], rotation=40, ha="right", fontsize=8)
-    ax.set_ylabel("passiveness score  (← active   passive →)")
-    ax.set_title("Predicted propagation mode per species\n(active-leaning = low dispersion, rigid translation, high waveform fidelity)")
+    ax.set_xticklabels([f"{s}\n(short {g.loc[s,'AP_fraction']:.0%})" for s in order], rotation=40, ha="right", fontsize=8)
+    ax.set_ylabel("dispersion score  (← rigid translation   dispersive →)")
+    ax.set_title("Descriptive dispersion profile of the near→far transformation\n"
+                 "NOT a propagation-mode classification — this montage cannot adjudicate active vs passive (Section 6)")
     handles = [plt.Rectangle((0, 0), 1, 1, color=colmap[k]) for k in colmap]
     ax.legend(handles, colmap.keys(), fontsize=8, loc="upper left")
     fig.tight_layout(); fig.savefig(out, dpi=120); plt.close(fig)
