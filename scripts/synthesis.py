@@ -38,7 +38,9 @@ def matrix():
         peak_onset=("peak_delay_s", "median"),
     )
     g["dispersion"] = sim.groupby("species")["sigma"].median()
-    g["short_fraction"] = pt.groupby("species")["potential_type"].apply(lambda s: (s == "AP-like").mean())
+    # valid-only, to match Section 4 and the two_mechanisms figure (n=166, not 176)
+    ptv = pt[pt["valid"] == True] if "valid" in pt.columns else pt   # noqa: E712
+    g["short_fraction"] = ptv.groupby("species")["potential_type"].apply(lambda s: (s == "AP-like").mean())
     g["family"] = [SPECIES_FAMILY.get(s, "?") for s in g.index]
     g.to_csv(os.path.join(ROOT, "results", "species_parameters.csv"))
     return g
@@ -80,6 +82,14 @@ def parameter_clustermap(g, out):
     """Species × parameter heatmap, clustered; row labels coloured by family.
     Tests whether species group by their functional parameters — and by family."""
     cols = ["CV", "attenuation", "broadening", "waveform_sim", "dispersion", "short_fraction"]
+    # Drop zero-variance columns rather than silently z-scoring them to all-zeros:
+    # in the short-only / long-only subsets short_fraction is constant by construction,
+    # and an all-zero column would be advertised as a clustering parameter while
+    # contributing nothing to the distances.
+    const = [c for c in cols if g[c].std() == 0 or not np.isfinite(g[c].std())]
+    if const:
+        print(f"  clustermap: dropping constant column(s) {const}")
+        cols = [c for c in cols if c not in const]
     Z = (g[cols] - g[cols].mean()) / g[cols].std().replace(0, 1)
     link = linkage(Z.values, method="average", metric="euclidean")
     order = dendrogram(link, no_plot=True, labels=list(Z.index))["ivl"]
