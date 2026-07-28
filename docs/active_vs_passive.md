@@ -99,7 +99,7 @@ same species at the passive end:**
    `peak_onset_asymmetry.png`.
 
 3. **Delay–distance scaling** (`velocity_fit` + log-log exponent): delay ∝ dᵇ
-   with **b = 0.99** (95% CI ±0.37, p = 6×10⁻⁷) — i.e. **ballistic, constant
+   with **b = 1.09** (95% CI ±0.37, n = 151, p = 3×10⁻⁸) — i.e. **ballistic, constant
    velocity** (b≈1), *not* diffusive (b≈2). A hydraulic/diffusive courier would
    give b≈2 with an apparent D near the xylem turbulent-diffusion range
    (0.05–0.12 cm²/s; Vodeneev et al. 2015); we see b≈1, v≈4.9 mm/s, intercept≈0.

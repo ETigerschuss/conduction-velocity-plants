@@ -1,9 +1,10 @@
-"""Synthesis: predict active/passive propagation per species (Part 4), and group
-all species by every parameter to test for phylogenetic structure (Part 5).
+"""Synthesis: a DESCRIPTIVE dispersion profile per species (Part 4; deliberately
+not a propagation-mode verdict), and grouping by every parameter to test for
+phylogenetic structure (Part 5).
 
 Parameters per species (medians): conduction velocity, amplitude attenuation
 (far/near), broadening (FWHM far/near), waveform similarity, passive dispersion σ
-(from the model fit), peak−onset asymmetry, and AP-like fraction.
+(from the model fit), peak−onset asymmetry, and short-duration fraction.
 """
 from __future__ import annotations
 
@@ -37,7 +38,7 @@ def matrix():
         peak_onset=("peak_delay_s", "median"),
     )
     g["dispersion"] = sim.groupby("species")["sigma"].median()
-    g["AP_fraction"] = pt.groupby("species")["potential_type"].apply(lambda s: (s == "AP-like").mean())
+    g["short_fraction"] = pt.groupby("species")["potential_type"].apply(lambda s: (s == "AP-like").mean())
     g["family"] = [SPECIES_FAMILY.get(s, "?") for s in g.index]
     g.to_csv(os.path.join(ROOT, "results", "species_parameters.csv"))
     return g
@@ -63,7 +64,7 @@ def active_passive_prediction(g, out):
     ax.bar(range(len(order)), score[order], color=[colmap[pred[s]] for s in order], edgecolor="k", lw=0.4)
     ax.axhline(0, color="k", lw=0.6)
     ax.set_xticks(range(len(order)))
-    ax.set_xticklabels([f"{s}\n(short {g.loc[s,'AP_fraction']:.0%})" for s in order], rotation=40, ha="right", fontsize=8)
+    ax.set_xticklabels([f"{s}\n(short {g.loc[s,'short_fraction']:.0%})" for s in order], rotation=40, ha="right", fontsize=8)
     ax.set_ylabel("dispersion score  (← rigid translation   dispersive →)")
     ax.set_title("Descriptive dispersion profile of the near→far transformation\n"
                  "NOT a propagation-mode classification — this montage cannot adjudicate active vs passive (Section 6)")
@@ -78,7 +79,7 @@ def active_passive_prediction(g, out):
 def parameter_clustermap(g, out):
     """Species × parameter heatmap, clustered; row labels coloured by family.
     Tests whether species group by their functional parameters — and by family."""
-    cols = ["CV", "attenuation", "broadening", "waveform_sim", "dispersion", "AP_fraction"]
+    cols = ["CV", "attenuation", "broadening", "waveform_sim", "dispersion", "short_fraction"]
     Z = (g[cols] - g[cols].mean()) / g[cols].std().replace(0, 1)
     link = linkage(Z.values, method="average", metric="euclidean")
     order = dendrogram(link, no_plot=True, labels=list(Z.index))["ivl"]

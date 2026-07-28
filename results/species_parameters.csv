@@ -1,4 +1,4 @@
-species,CV,attenuation,broadening,waveform_sim,peak_onset,dispersion,AP_fraction,family,passiveness_score,predicted_mode
+species,CV,attenuation,broadening,waveform_sim,peak_onset,dispersion,short_fraction,family,passiveness_score,predicted_mode
 Argentian Dollar,2.1265,0.157,1.677,0.739,1.88,0.7194915254237289,0.625,Lamiaceae,0.5117045272876632,high dispersion
 Basil,11.04,0.245,1.312,0.734,2.59,0.5186440677966102,0.7272727272727273,Lamiaceae,0.4270976477386732,high dispersion
 Chilean Chile,13.556,0.625,1.125,0.863,1.81,0.3847457627118644,0.8181818181818182,Solanaceae,-0.5012618668588383,low dispersion

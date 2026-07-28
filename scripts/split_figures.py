@@ -44,7 +44,7 @@ def matrix_subset(ptype):
         peak_onset=("peak_delay_s", "median"))
     sim = MC[(MC["norm"] == "norm") & (MC["potential_type"] == ptype)]
     g["dispersion"] = sim.groupby("species")["sigma"].median()
-    g["AP_fraction"] = 1.0 if ptype == "AP-like" else 0.0
+    g["short_fraction"] = 1.0 if ptype == "AP-like" else 0.0
     g["family"] = [SPECIES_FAMILY.get(s, "?") for s in g.index]
     return g.dropna(subset=["CV", "attenuation", "broadening", "waveform_sim", "dispersion"])
 

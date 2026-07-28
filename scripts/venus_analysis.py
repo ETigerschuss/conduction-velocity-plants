@@ -50,12 +50,14 @@ def electrode_asymmetry(df, out):
         c = "#d62728" if sp == "Venus Flytrap" else FAMILY_COLORS.get(SPECIES_FAMILY.get(sp, ""), "#1f77b4")
         ax.scatter(np.random.normal(i, 0.08, len(a)), a, s=26, color=c, alpha=0.75, edgecolor="k", lw=0.3)
         ax.scatter(i, a.median(), s=120, marker="_", color="k")
-    ax.axhline(1, color="k", ls="--", lw=1, label="gain = 1 (non-decremental / 'active line')")
+    ax.axhline(1, color="k", ls="--", lw=1, label="gain = 1 (non-decremental)")
     ax.set_yscale("log")
     ax.set_xticks(range(len(order))); ax.set_xticklabels(order, rotation=30, ha="right", fontsize=8)
     ax.set_ylabel("far / near peak amplitude (log)")
-    ax.set_title("Why Venus sits below the active line: amplitude ratio is set by the\n"
-                 "asymmetric hook/stake electrodes (scattered, often >1), not by decrement")
+    ax.set_title("Measured amplitude ratio does NOT report propagation decrement:\n"
+                 "Venus (certain AP, non-decremental) always measures <1 (median 0.30), while Mimosa "
+                 "(also certain AP) exceeds 1 in 59% of recordings.\nBoth are impossible for true propagation — "
+                 "the ratio is set by electrode–tissue coupling.", fontsize=10)
     ax.legend(fontsize=8)
     fig.tight_layout(); fig.savefig(out, dpi=120); plt.close(fig)
 
@@ -121,12 +123,13 @@ def ap_model_figure(out):
         tr = (np.arange(len(real)) - int(np.argmax(np.abs(real)))) / 200.0
         ax.plot(tr, real, "C3", lw=1.5, alpha=0.8, label="real Venus AP (norm.)")
     ax.set_xlim(-2, 5); ax.set_xlabel("time from peak (s)"); ax.set_ylabel("normalised")
-    ax.set_title("Model AP (filtered) vs a real Venus AP\nshape reproduced")
+    ax.set_title("Model AP (filtered) vs a real Venus AP\nmatched by eye — not a fit")
     ax.legend(fontsize=7)
 
     for a in axes:
         a.grid(ls="--", alpha=0.3)
-    fig.suptitle("Adopting a biophysical Venus-flytrap AP model to our recordings", fontsize=13)
+    fig.suptitle("ILLUSTRATIVE: a published biophysical Venus-flytrap AP model (illustrative conductances, not fitted to our data)",
+                 fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.96)); fig.savefig(out, dpi=120); plt.close(fig)
 
 
@@ -136,12 +139,10 @@ def main():
     electrode_asymmetry(df, os.path.join(FIG, "venus_electrode_asymmetry.png"))
     ap_model_figure(os.path.join(FIG, "venus_ap_model.png"))
 
-    # CV reproduced from the experimenters' manual delays (spreadsheet)
-    dist = pd.read_csv(os.path.join(ROOT, "data", "distances.csv"))
-    m = df.merge(dist, on=["species", "recording"], how="left")
-    m["cv_manual"] = m["distance_mm_x"] / m["sheet_delay_s"]
+    # CV reproduced from the experimenters' manual delays (cv_manual is merged into
+    # recordings.csv by cvplants.batch.augment_cv; no need to re-derive it here)
     for sp in ["Sensitive Mimosa", "Venus Flytrap"]:
-        s = m[m["species"] == sp]
+        s = df[df["species"] == sp]
         print(f"{sp}: CV from THEIR delays mean={s['cv_manual'].mean():.1f} "
               f"(paper {'32.4' if 'Mimosa' in sp else '35.3'}); my automatic mean="
               f"{df[(df.species==sp)&(df.delay_resolved==True)]['cv_xcorr_mm_s'].mean():.1f}")

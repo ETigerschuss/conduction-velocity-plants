@@ -64,9 +64,11 @@ def peak_onset_fig(df, out):
     ax.axhline(0, color="k", ls="--", lw=1)
     ax.set_xticks(range(len(order))); ax.set_xticklabels(order, rotation=40, ha="right", fontsize=8)
     ax.set_ylabel("peak delay − onset delay (s)"); ax.set_ylim(-1.5, 3)
-    ax.text(0.01, 0.97, "≈0 : rigid translation (ACTIVE)", transform=ax.transAxes, va="top", color="#2a7a2a", fontsize=9)
-    ax.text(0.99, 0.97, "large + : peak lags onset (PASSIVE, dispersive)", transform=ax.transAxes, va="top", ha="right", color="#b03030", fontsize=9)
-    ax.set_title("Peak−onset delay asymmetry: an independent active↔passive discriminator")
+    ax.text(0.01, 0.97, "≈0 : near-rigid translation", transform=ax.transAxes, va="top", color="#2a7a2a", fontsize=9)
+    ax.text(0.99, 0.97, "large + : peak lags onset (dispersive)", transform=ax.transAxes, va="top", ha="right", color="#b03030", fontsize=9)
+    ax.set_title("Peak−onset delay asymmetry: an amplitude-independent measure of dispersion\n"
+                 "(a descriptive metric — it does not by itself identify active vs passive propagation)",
+                 fontsize=11)
     ax.grid(axis="y", ls="--", alpha=0.3)
     fig.tight_layout(); fig.savefig(out, dpi=120); plt.close(fig)
 
@@ -149,7 +151,8 @@ def sim_fig(out):
         ax.set_xlabel("time (s / model units)"); ax.set_ylabel("amplitude")
     for ax in axes:
         ax.grid(ls="--", alpha=0.3)
-    fig.suptitle("What active vs passive propagation looks like (simulation)", fontsize=13)
+    fig.suptitle("ILLUSTRATIVE (no data): what active vs passive propagation would look like — the signatures we then looked for",
+                 fontsize=12)
     fig.tight_layout(rect=(0, 0, 1, 0.97)); fig.savefig(out, dpi=120); plt.close(fig)
 
 

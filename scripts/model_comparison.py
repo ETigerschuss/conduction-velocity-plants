@@ -191,8 +191,9 @@ def bars(df, out):
     ax.set_xticks(range(len(order)))
     ax.set_xticklabels(order, rotation=40, ha="right", fontsize=8)
     ax.set_title("Active vs passive waveform fit of the far trace, per species "
-                 "(each recording a dot, bar = median).\nPassive ⊇ active (nested), so the GAP is how much "
-                 "dispersion is needed: small gap = shape-preserving (active-like), large = dispersive (passive-like).",
+                 "(each recording a dot, bar = median).\nPassive ⊇ active (nested), so the GAP measures only HOW MUCH "
+                 "DISPERSION IS NEEDED — not the propagation mode:\nthe passive model is never out-fit, including in "
+                 "Venus and Mimosa whose action potentials are established.",
                  fontsize=11)
     fig.suptitle("Active (delay+gain) vs passive (delay+gain+dispersion) fit of far from near, per species\n"
                  "(each recording a dot, bar = median). Top: waveform shape only. Bottom: must also match the "
