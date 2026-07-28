@@ -1,5 +1,17 @@
 # Active vs passive propagation: analyses, ion channels, and simulation
 
+> **SUPERSEDED (2026-07-28).** This note predates the corrected analysis and
+> contains claims that have since been **withdrawn**. In particular the statement
+> below that an *active* model out-predicts the passive cable is **wrong**: it came
+> from an earlier fit with a shared-component term. On the current, properly
+> optimised waveform fit the passive model is never out-fit (strictly better in
+> 157/176, tied in 19, active in none; BIC favours passive 153/176) — including for
+> Venus flytrap and Mimosa, whose action potentials are certain. The montage
+> **cannot adjudicate active vs passive**. See
+> `results/Plant_conduction_velocity_report.docx` (Sections 4 and 6) for the
+> current position; treat this file as history.
+
+
 Three questions: (1) what else can distinguish active (regenerative) from
 passive (electrotonic / decremental / hydraulic) propagation of these
 potentials, (2) which ion channels are involved, and (3) can we simulate it.
@@ -63,10 +75,9 @@ Environ*; Vodeneev, Akinchits & Sukhov 2015, *Plant Signal Behav*):
   called this an artifact — corrected.)
 
 **Simulation vs real (`scripts/sim_vs_real.py`, `sim_vs_real_examples.png`).**
-Predicting the far trace from the near trace, the **active model (delayed copy +
-shared component) out-predicts the passive cable** for almost every species
-(median R² 0.4–0.87 vs 0.2–0.79). The far trace really is a *delayed* copy of the
-near trace, not a dispersed one — direct evidence for propagation with a
+Predicting the far trace from the near trace, an earlier shared-component fit appeared to favour an **active** model; **this was
+superseded** (see banner) — on the corrected fit the passive model is never out-fit.
+What survives is that the far trace is a genuinely *delayed* copy of the near trace — direct evidence for propagation with a
 resolvable delay. For the fast species this supports genuinely fast conduction;
 the montage still cannot, on its own, prove the fast event is *regeneratively*
 (rather than passively) propagated, but the delay itself is real.

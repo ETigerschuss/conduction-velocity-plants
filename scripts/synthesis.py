@@ -73,8 +73,10 @@ def active_passive_prediction(g, out):
     handles = [plt.Rectangle((0, 0), 1, 1, color=colmap[k]) for k in colmap]
     ax.legend(handles, colmap.keys(), fontsize=8, loc="upper left")
     fig.tight_layout(); fig.savefig(out, dpi=120); plt.close(fig)
-    g["passiveness_score"] = score
-    g["predicted_mode"] = pred
+    # NOTE: deliberately NOT named "passiveness_score"/"predicted_mode". The
+    # per-species active/passive prediction was withdrawn (report Section 6);
+    # this column is a descriptive dispersion ordering only.
+    g["dispersion_index"] = score
     return g
 
 

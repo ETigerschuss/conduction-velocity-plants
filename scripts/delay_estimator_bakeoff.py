@@ -33,9 +33,11 @@ FIG = os.path.join(ROOT, "results", "figures")
 
 
 def main():
-    df = pd.read_csv(os.path.join(ROOT, "results", "recordings.csv"))
-    dist = pd.read_csv(os.path.join(ROOT, "data", "distances.csv"))
-    m = df.merge(dist, on=["species", "recording"], how="left")
+    # recordings.csv already carries sheet_delay_s (merged in by cvplants.batch.
+    # augment_cv). Re-merging data/distances.csv here suffixed it to
+    # sheet_delay_s_x/_y, silently dropped every row and crashed on the empty
+    # frame — so read the column straight off recordings.csv.
+    m = pd.read_csv(os.path.join(ROOT, "results", "recordings.csv"))
 
     rows = []
     for _, r in m.iterrows():

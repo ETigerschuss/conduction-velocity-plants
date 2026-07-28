@@ -1,5 +1,17 @@
 # Do signal-transformation properties track evolutionary relationship?
 
+> **SUPERSEDED (2026-07-28).** This note predates the corrected analysis and
+> contains claims that have since been **withdrawn**. In particular the statement
+> below that an *active* model out-predicts the passive cable is **wrong**: it came
+> from an earlier fit with a shared-component term. On the current, properly
+> optimised waveform fit the passive model is never out-fit (strictly better in
+> 157/176, tied in 19, active in none; BIC favours passive 153/176) — including for
+> Venus flytrap and Mimosa, whose action potentials are certain. The montage
+> **cannot adjudicate active vs passive**. See
+> `results/Plant_conduction_velocity_report.docx` (Sections 4 and 6) for the
+> current position; treat this file as history.
+
+
 Comparative analysis over 13 species (165 valid recordings). The three
 distance-independent metrics — amplitude attenuation (far/near peak), temporal
 broadening (far/near FWHM), and waveform similarity (max cross-correlation) —
@@ -98,14 +110,15 @@ Median CV (resolved-delay recordings), slowest to fastest:
 The pipeline reports three CV columns per recording (`recordings.csv`):
 `cv_xcorr_mm_s` (default cross-correlation), `cv_2tap` (common-mode-robust 2-tap
 delay), and `cv_manual` (distance ÷ the experimenters' own spreadsheet delay).
-They agree for every species except Mimosa's fast July batch; `cv_manual`
-reproduces the paper exactly (Mimosa 30.6, Venus 35.7 mm/s) and is the column to
-use when matching the manuscript numbers.
+They agree for every species except Mimosa's fast July batch; `cv_manual` does **not** reproduce the paper exactly: over all 176 recordings it
+gives Mimosa 32.4 (published 32.4) but Venus 41.2 (published 35.3), and on the
+valid-only basis Mimosa is 30.6. Do not select an estimator by agreement with the
+target answer.
 
 A forward-simulation check (`scripts/sim_vs_real.py`): predicting the far trace
-from the near trace, the **active model (delayed copy + shared component)
-out-predicts the passive cable** for almost every species (median R² 0.4–0.87 vs
-0.2–0.79), and the fitted delays are sign-consistent — i.e. the far trace really
+from the near trace, an earlier shared-component fit appeared to favour an active model; **this was
+superseded** — on the corrected fit the passive model is never out-fit (see banner).
+What survives is that the fitted delays are sign-consistent — i.e. the far trace really
 is a delayed copy of the near trace, not a dispersed one.
 
 All values sit in the earlier hand-measured 1–40 mm/s range. Venus flytrap is

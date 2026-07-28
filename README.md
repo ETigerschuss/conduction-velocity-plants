@@ -62,12 +62,12 @@ transformation summaries) if any of:
 
 ## Key findings
 
-From `results/` over 176 recordings (165 valid):
+From `results/` over 176 recordings (166 valid):
 
 - **The signal attenuates with distance.** Far/near amplitude ratio has a
-  median of ~0.44 — the potential loses roughly half its amplitude between
+  median of ~0.43 — the potential loses roughly half its amplitude between
   electrodes (decremental conduction), consistent with variation potentials.
-- **The wavefront broadens.** Far/near FWHM median ~1.31 — the far waveform is
+- **The wavefront broadens.** Far/near FWHM median ~1.29 — the far waveform is
   ~30% wider, i.e. the wave disperses as it travels.
 - **The shape is largely preserved.** Waveform cross-correlation median ~0.80,
   so the two channels record recognisably the same event with a lag.
@@ -93,7 +93,8 @@ cvplants/
   viz.py           per-recording, per-species and summary figures
   phylo.py         comparative analysis: functional profiles, clustering,
                    Mantel test vs taxonomy, cross-variable correlations
-  propagation.py   active-vs-passive discriminators (decrement/λ, delay-distance
+  propagation.py   near->far transformation metrics (see report S6: this montage
+                   cannot adjudicate active vs passive) (decrement/λ, delay-distance
                    exponent, peak-onset asymmetry, passive-kernel fit)
   simulate.py      passive cable + FitzHugh-Nagumo active-wave forward models
 scripts/active_passive.py  runs the above -> figures + docs/active_vs_passive.md

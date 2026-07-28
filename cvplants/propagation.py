@@ -279,7 +279,15 @@ def velocity_fit(df: pd.DataFrame, species=None):
     d = v["distance_mm"].to_numpy()
     delay = v["xcorr_delay_s"].to_numpy()
     lr = linregress(d, delay)
-    vel = 1.0 / lr.slope if lr.slope > 0 else np.nan
+    # 1/slope is a REGRESSION-DERIVED velocity, not this study's CV estimate
+    # (which is per-recording distance/delay, cv_xcorr_mm_s). Where the
+    # within-species slope is flat or non-significant, 1/slope explodes into a
+    # meaningless extrapolation — Venus flytrap previously reported 206.93 mm/s
+    # against a true ~33. Only emit it when the regression actually supports a
+    # slope; otherwise NaN.
+    vel = np.nan
+    if lr.slope > 0 and lr.pvalue < 0.05:
+        vel = 1.0 / lr.slope
     return dict(species=species or "ALL", n=len(v), slope_s_per_mm=float(lr.slope),
                 velocity_mm_s=float(vel), intercept_s=float(lr.intercept),
                 r=float(lr.rvalue), p=float(lr.pvalue))
