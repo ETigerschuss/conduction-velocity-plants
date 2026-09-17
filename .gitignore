@@ -19,3 +19,8 @@ Thumbs.db
 
 # Unpublished manuscript / figures (do not publish)
 *.pdf
+
+# Cover-art masters: 300 DPI A4 PNGs (~43 MB) regenerate from scripts/cover_art.py.
+# The contact sheet is kept as the browsable reference.
+results/figures/cover/*.png
+!results/figures/cover/_contact_sheet.png
