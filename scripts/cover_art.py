@@ -116,10 +116,10 @@ def load(path=CACHE, rebuild=False):
 
 # ------------------------------------------------------------------------ helpers
 
-def _canvas(facecolor="black"):
+def _canvas(facecolor="black", margin=0.0):
     fig = plt.figure(figsize=A4)
     fig.patch.set_facecolor(facecolor)
-    ax = fig.add_axes([0, 0, 1, 1])
+    ax = fig.add_axes([margin, margin, 1 - 2 * margin, 1 - 2 * margin])
     ax.set_facecolor(facecolor)
     ax.set_xticks([]); ax.set_yticks([])
     for s in ax.spines.values():
@@ -139,14 +139,32 @@ def _clean(y):
     return np.nan_to_num(y, nan=0.0)
 
 
-def _gradient_line(ax, x, y, c0, c1, lw=0.8, alpha=1.0, zorder=2):
-    """One polyline whose colour sweeps c0 -> c1 along its length."""
+def _gradient_line(ax, x, y, c0, c1, lw=0.8, alpha=1.0, zorder=2, power=1.0):
+    """One polyline whose colour sweeps c0 -> c1 along its length.
+
+    power > 1 holds c0 for longer and then fades hard, so on a concatenated
+    near|far line the near half keeps its species colour and the fade lands
+    almost entirely on the far half.
+    """
     pts = np.array([x, y]).T.reshape(-1, 1, 2)
     segs = np.concatenate([pts[:-1], pts[1:]], axis=1)
     cm = LinearSegmentedColormap.from_list("g", [c0, c1])
     lc = LineCollection(segs, cmap=cm, linewidth=lw, alpha=alpha, zorder=zorder)
-    lc.set_array(np.linspace(0, 1, len(segs)))
+    lc.set_array(np.linspace(0, 1, len(segs)) ** power)
     ax.add_collection(lc)
+
+
+def _fit_pair(near, far):
+    """Scale a near/far pair by their JOINT max so neither can leave the canvas.
+
+    The cache normalises both channels by the NEAR peak, so a recording whose far
+    electrode read larger (electrode coupling; up to 15x here) would shoot far off
+    the top and be clipped. Dividing both by the joint max bounds everything to
+    [-1, 1] while preserving the far/near ratio that makes attenuation visible.
+    """
+    a, b = _clean(near), _clean(far)
+    m = max(np.max(np.abs(a)), np.max(np.abs(b)), 1e-9)
+    return a / m, b / m
 
 
 def _tint(c, amount=0.62):
@@ -166,6 +184,25 @@ def _by_species(d):
     med = {s: np.nanmedian(d["cv"][d["species"] == s]) for s in d["order"]}
     order = sorted(d["order"], key=lambda s: med[s])
     return order, {s: np.where(d["species"] == s)[0] for s in order}
+
+
+def _by_calm(d):
+    """Same grouping, but species ordered by how much vertical room they need.
+
+    The quietest species goes FIRST so it sits at the top of the page. Weight is
+    RMS over the drawn (jointly-normalised) pair, not peak height: after
+    normalisation every trace peaks at exactly 1, so peak height cannot rank them
+    -- RMS captures how much ink a species actually puts on the page.
+    """
+    idx = {s: np.where(d["species"] == s)[0] for s in d["order"]}
+    weight = {}
+    for s_, ii in idx.items():
+        r = []
+        for i in ii:
+            a, b = _fit_pair(d["near"][i], d["far"][i])
+            r.append(float(np.sqrt(np.mean(np.concatenate([a, b]) ** 2))))
+        weight[s_] = float(np.median(r)) if r else 0.0
+    return sorted(d["order"], key=lambda s_: weight[s_]), idx
 
 
 # ------------------------------------------------------------------------- designs
@@ -220,25 +257,34 @@ def v03_concatenated(d):
 
 
 def v04_radial(d):
-    """Polar burst: each recording a spoke, angle by species, colour by species."""
-    fig = plt.figure(figsize=A4); fig.patch.set_facecolor("black")
-    ax = fig.add_axes([0.02, 0.02, 0.96, 0.96], projection="polar")
-    ax.set_facecolor("black"); ax.set_xticks([]); ax.set_yticks([])
+    """Polar burst: each recording a spoke, hue = species. Inner ring = near,
+    outer ring = far in a heavily tinted version of the same hue, so the fade
+    reads the same way as the fused design. Pairs are jointly normalised so one
+    large-far recording cannot swing across its neighbours."""
+    fig = plt.figure(figsize=A4)
+    fig.patch.set_facecolor("black")
+    m = 0.055
+    ax = fig.add_axes([m, m, 1 - 2 * m, 1 - 2 * m], projection="polar")
+    ax.set_facecolor("black")
+    ax.set_xticks([]); ax.set_yticks([])
     ax.spines["polar"].set_visible(False)
-    g = d["grid"]
-    order, idx = _by_species(d)
-    total = sum(len(idx[s]) for s in order)
-    k = 0
-    for s in order:
-        for i in idx[s]:
+    order, idx = _by_calm(d)
+    total = sum(len(idx[s_]) for s_ in order)
+    k, rmax = 0, 0.0
+    for s_ in order:
+        col = d["cmap"][s_]
+        far_c = _tint(col, 0.62)
+        for i in idx[s_]:
+            a, b = _fit_pair(d["near"][i], d["far"][i])
             th = 2 * np.pi * k / total
-            amp = _clean(d["near"][i])
-            r = 1.0 + 0.55 * np.linspace(0, 1, len(amp))
-            ax.plot(th + amp * 0.16, r, lw=0.8, color=d["cmap"][s], alpha=0.9)
-            amp2 = _clean(d["far"][i])
-            ax.plot(th + amp2 * 0.16, r + 0.62, lw=0.7, color=d["cmap"][s], alpha=0.45)
+            u = np.linspace(0, 1, len(a))
+            r_in = 0.66 + 0.60 * u
+            r_out = 1.40 + 0.60 * u
+            ax.plot(th + a * 0.17, r_in, lw=0.85, color=col, alpha=0.95)
+            ax.plot(th + b * 0.17, r_out, lw=0.8, color=far_c, alpha=0.75)
+            rmax = max(rmax, r_out.max())
             k += 1
-    ax.set_ylim(0, 2.5)
+    ax.set_ylim(0, rmax * 1.06)     # headroom so no spoke touches the edge
     _save(fig, "04_radial_burst.png")
 
 
@@ -365,28 +411,41 @@ def v10_overlay(d):
 def _species_concat(d, out, mode="tint", divider=True):
     """2 x 3: the concatenated near|far line of design 03, carrying the species
     palette of design 02. Hue = species; luminance sweeps along the line so the
-    near->far join still reads without spending a second hue on it."""
-    fig, ax = _canvas()
+    near->far join reads without spending a second hue on it.
+
+    Both channels are scaled by their joint max (_fit_pair) so nothing can leave
+    the canvas, species are ordered quietest-first so the top of the page stays
+    clear, and the axis limits are taken from the drawn data plus a margin -- so
+    no trace is cropped.
+    """
+    fig, ax = _canvas(margin=0.055)
     g = d["grid"]
     span = g[-1] - g[0]
-    gap = 0.45
-    order, idx = _by_species(d)
+    gap = 0.5
+    order, idx = _by_calm(d)
     ys, row = -0.058, 0
+    lo, hi = 0.0, 0.0
     for s_ in order:
         col = d["cmap"][s_]
-        c0, c1 = (col, _tint(col)) if mode == "tint" else (_tint(col, 0.35), _shade(col))
+        if mode == "tint":
+            c0, c1 = col, _tint(col, 0.70)          # full colour -> pale, hue kept
+        else:
+            c0, c1 = _tint(col, 0.25), _shade(col, 0.72)
         for i in idx[s_]:
+            a, b = _fit_pair(d["near"][i], d["far"][i])
             x = np.concatenate([g, g + span + gap])
-            y = np.concatenate([_clean(d["near"][i]), _clean(d["far"][i])]) + row * ys
-            _gradient_line(ax, x, y, c0, c1, lw=0.78)
+            y = np.concatenate([a, b]) + row * ys
+            # power=2.2 keeps the near half saturated and drops the fade on the far half
+            _gradient_line(ax, x, y, c0, c1, lw=0.8, power=1.9)
+            lo = min(lo, float(y.min())); hi = max(hi, float(y.max()))
             row += 1
-        row += 1.5
+        row += 1.6
     if divider:
-        # faint rule at the join so the two channels are unambiguous
         xm = g[-1] + gap / 2
-        ax.axvline(xm, color="#555", lw=0.6, alpha=0.55, zorder=0)
-    ax.set_xlim(g[0] - 0.3, g[0] + 2 * span + gap + 0.3)
-    ax.set_ylim(row * ys - 0.6, 1.4)
+        ax.axvline(xm, color="#4a4a4a", lw=0.6, alpha=0.6, zorder=0)
+    padx, pady = 0.35, 0.12 * (hi - lo) / 10.0 + 0.25
+    ax.set_xlim(g[0] - padx, g[0] + 2 * span + gap + padx)
+    ax.set_ylim(lo - pady, hi + pady)
     _save(fig, out)
 
 
