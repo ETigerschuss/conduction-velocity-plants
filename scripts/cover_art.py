@@ -26,7 +26,7 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.collections import LineCollection
-from matplotlib.colors import LinearSegmentedColormap, to_rgba
+from matplotlib.colors import LinearSegmentedColormap, to_rgba, to_rgb
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
@@ -147,6 +147,18 @@ def _gradient_line(ax, x, y, c0, c1, lw=0.8, alpha=1.0, zorder=2):
     lc = LineCollection(segs, cmap=cm, linewidth=lw, alpha=alpha, zorder=zorder)
     lc.set_array(np.linspace(0, 1, len(segs)))
     ax.add_collection(lc)
+
+
+def _tint(c, amount=0.62):
+    """Lighten toward white (keeps hue, raises luminance)."""
+    r, g, b = to_rgb(c)
+    return (r + (1 - r) * amount, g + (1 - g) * amount, b + (1 - b) * amount)
+
+
+def _shade(c, amount=0.55):
+    """Darken toward black (keeps hue, drops luminance)."""
+    r, g, b = to_rgb(c)
+    return (r * (1 - amount), g * (1 - amount), b * (1 - amount))
 
 
 def _by_species(d):
@@ -350,9 +362,48 @@ def v10_overlay(d):
     _save(fig, "10_population_overlay.png")
 
 
+def _species_concat(d, out, mode="tint", divider=True):
+    """2 x 3: the concatenated near|far line of design 03, carrying the species
+    palette of design 02. Hue = species; luminance sweeps along the line so the
+    near->far join still reads without spending a second hue on it."""
+    fig, ax = _canvas()
+    g = d["grid"]
+    span = g[-1] - g[0]
+    gap = 0.45
+    order, idx = _by_species(d)
+    ys, row = -0.058, 0
+    for s_ in order:
+        col = d["cmap"][s_]
+        c0, c1 = (col, _tint(col)) if mode == "tint" else (_tint(col, 0.35), _shade(col))
+        for i in idx[s_]:
+            x = np.concatenate([g, g + span + gap])
+            y = np.concatenate([_clean(d["near"][i]), _clean(d["far"][i])]) + row * ys
+            _gradient_line(ax, x, y, c0, c1, lw=0.78)
+            row += 1
+        row += 1.5
+    if divider:
+        # faint rule at the join so the two channels are unambiguous
+        xm = g[-1] + gap / 2
+        ax.axvline(xm, color="#555", lw=0.6, alpha=0.55, zorder=0)
+    ax.set_xlim(g[0] - 0.3, g[0] + 2 * span + gap + 0.3)
+    ax.set_ylim(row * ys - 0.6, 1.4)
+    _save(fig, out)
+
+
+def v11_species_concat_tint(d):
+    """Near = full species colour, far = the same hue tinted toward white."""
+    _species_concat(d, "11_species_concat_tint.png", mode="tint")
+
+
+def v12_species_concat_deep(d):
+    """Near = pale species tint, far = the same hue deepened (reads as attenuation)."""
+    _species_concat(d, "12_species_concat_deep.png", mode="deep")
+
+
 DESIGNS = [v01_waterfall_channels, v02_waterfall_species, v03_concatenated,
            v04_radial, v05_butterfly, v06_species_grid, v07_ribbon,
-           v08_spiral, v09_velocity_cascade, v10_overlay]
+           v08_spiral, v09_velocity_cascade, v10_overlay,
+           v11_species_concat_tint, v12_species_concat_deep]
 
 
 def main():
@@ -369,8 +420,9 @@ def contact_sheet():
     """One landscape sheet with all ten candidates as labelled thumbnails."""
     from PIL import Image
     files = sorted(f for f in os.listdir(OUT) if f.endswith(".png") and f[0].isdigit())
-    ncol, nrow = 5, 2
-    fig = plt.figure(figsize=(16.5, 11.0))
+    ncol = 5
+    nrow = int(np.ceil(len(files) / ncol))
+    fig = plt.figure(figsize=(16.5, 5.5 * nrow))
     fig.patch.set_facecolor("#0b0b0b")
     for k, f in enumerate(files):
         ax = fig.add_subplot(nrow, ncol, k + 1)
@@ -381,7 +433,7 @@ def contact_sheet():
         name = f[:-4].replace("_", " ")
         ax.set_title(name, color="white", fontsize=8, pad=4)
     fig.subplots_adjust(left=0.01, right=0.99, top=0.95, bottom=0.01, wspace=0.06, hspace=0.12)
-    fig.suptitle("Cover-art candidates — 13 species, 166 two-channel recordings",
+    fig.suptitle(f"Cover-art candidates ({len(files)}) — 13 species, 166 two-channel recordings",
                  color="white", fontsize=13, y=0.99)
     p = os.path.join(OUT, "_contact_sheet.png")
     fig.savefig(p, dpi=110, facecolor=fig.get_facecolor())
