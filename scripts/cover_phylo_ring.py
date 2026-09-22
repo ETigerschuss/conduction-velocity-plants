@@ -37,6 +37,7 @@ sys.path.insert(0, os.path.join(ROOT, "scripts"))
 
 from cover_art import load, _fit_pair, _tint, SPECIES_COLORS      # noqa: E402
 from cvplants.io import SPECIES_LATIN                             # noqa: E402
+from plant_icons import draw_icon                                 # noqa: E402
 
 OUT = os.path.join(ROOT, "results", "figures", "cover")
 A4 = (8.27, 11.69)
@@ -125,7 +126,7 @@ def flame(ax, scale=R_FLAME):
         ax.fill(*polar(t, rr), color="#ff7a1f", alpha=aa, zorder=2, lw=0)
 
 
-def build(labels_inside=False):
+def build(labels_inside=False, icons=True):
     d = load()
     order = leaves(TREE)
     missing = set(order) ^ set(d["order"])
@@ -223,23 +224,33 @@ def build(labels_inside=False):
         # colour rim OUTSIDE the data (it used to sit on the tree and hide it)
         arc(ax, t0, t1, R_RIM, color=col, lw=2.6, alpha=0.95, zorder=5)
 
-    # --- species labels
-    r_lab = 0.96 if labels_inside else R_RIM + 0.10
-    for s in order:
-        th = mid[s]
-        deg = np.degrees(th) % 360
-        flip = 90 < deg < 270
-        ax.text(*polar(th, r_lab), SPECIES_LATIN.get(s, s),
-                color=cmap[s], fontsize=6.6 if labels_inside else 7.4,
-                ha="right" if flip else "left", va="center",
-                rotation=deg + 180 if flip else deg,
-                rotation_mode="anchor", style="italic", zorder=7)
+    # --- species marks: silhouettes by default, Latin names with --names
+    if icons:
+        r_ico = R_RIM + 0.40
+        for s_ in order:
+            th = mid[s_]
+            # kept UPRIGHT: rotating them radially made the leaves read sideways
+            # or upside down around the bottom of the ring
+            draw_icon(ax, s_, *polar(th, r_ico), size=0.40, rot_deg=0.0,
+                      color=cmap[s_], alpha=0.96, zorder=8, lw=1.1)
+        r_lab = r_ico + 0.42
+    else:
+        r_lab = 0.96 if labels_inside else R_RIM + 0.10
+        for s_ in order:
+            th = mid[s_]
+            deg = np.degrees(th) % 360
+            flip = 90 < deg < 270
+            ax.text(*polar(th, r_lab), SPECIES_LATIN.get(s_, s_),
+                    color=cmap[s_], fontsize=6.6 if labels_inside else 7.4,
+                    ha="right" if flip else "left", va="center",
+                    rotation=deg + 180 if flip else deg,
+                    rotation_mode="anchor", style="italic", zorder=7)
 
-    lim = (r_lab + 0.80) if not labels_inside else (R_RIM + 0.10)
+    lim = (r_lab + 0.04) if icons else ((r_lab + 0.80) if not labels_inside else (R_RIM + 0.10))
     ax.set_xlim(-lim, lim); ax.set_ylim(-lim, lim)
     flame(ax)
 
-    name = "13_phylo_ring%s.png" % ("_labels_inside" if labels_inside else "")
+    name = "13_phylo_ring%s.png" % ("" if icons else ("_labels_inside" if labels_inside else "_names"))
     os.makedirs(OUT, exist_ok=True)
     p = os.path.join(OUT, name)
     fig.savefig(p, dpi=DPI, facecolor=fig.get_facecolor())
@@ -249,4 +260,5 @@ def build(labels_inside=False):
 
 
 if __name__ == "__main__":
-    build(labels_inside="--labels-inside" in sys.argv)
+    build(labels_inside="--labels-inside" in sys.argv,
+          icons="--names" not in sys.argv)
